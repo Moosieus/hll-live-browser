@@ -1,4 +1,6 @@
-# LiveBrowser
+# HLL LiveBrowser
+
+An experimental live browser for Hell Let Loose.
 
 To start your Phoenix server:
 
