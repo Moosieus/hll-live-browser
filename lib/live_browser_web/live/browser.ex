@@ -7,14 +7,16 @@ defmodule LiveBrowserWeb.Browser do
     end
 
     order = [{:players, :desc}]
+    show_full = true
+    show_empty = false
 
     servers_info = GenServer.call(Quester.Cache, :servers_info)
-    |> sort_servers(order)
+    |> apply_user_settings(show_full, show_empty, order)
 
     socket = socket
-    |> assign(:show_full, true)
-    |> assign(:show_empty, true)
     |> assign(:order, order)
+    |> assign(:show_full, show_full)
+    |> assign(:show_empty, show_empty)
     |> assign(:servers_info, servers_info)
     |> stream_configure(:servers_info, dom_id: fn {k, _v} -> "servers_info-#{k}" end)
     |> stream(:servers_info, servers_info)
@@ -22,6 +24,14 @@ defmodule LiveBrowserWeb.Browser do
     # |> assign(:servers_info, servers_info)
 
     {:ok, socket}
+  end
+
+  def handle_info(%{players: 0}, %{assigns: %{show_empty: false}} = socket) do
+    {:noreply, socket}
+  end
+
+  def handle_info(%{players: 100}, %{assigns: %{show_full: false}} = socket) do
+    {:noreply, socket}
   end
 
   def handle_info(info, socket) do
@@ -54,10 +64,34 @@ defmodule LiveBrowserWeb.Browser do
     end
   end
 
-  def handle_event("toggle", %{"by" => opt_str}, socket) do
-    opt = String.to_atom(opt_str)
+  # bad, should be general!
 
-    {:noreply, assign(socket, opt, !socket.assign.opt)}
+  def handle_event("toggle", %{"by" => "show_full"}, socket) do
+    show_full = !socket.assigns[:show_full]
+
+    servers_info = GenServer.call(Quester.Cache, :servers_info)
+    |> apply_user_settings(show_full, socket.assigns.show_empty, socket.assigns.order)
+
+    socket = socket
+    |> assign(:show_full, show_full)
+    |> assign(:servers_info, servers_info)
+    |> stream(:servers_info, servers_info, reset: true)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("toggle", %{"by" => "show_empty"}, socket) do
+    show_empty = !socket.assigns[:show_empty]
+
+    servers_info = GenServer.call(Quester.Cache, :servers_info)
+    |> apply_user_settings(socket.assigns.show_full, show_empty, socket.assigns.order)
+
+    socket = socket
+    |> assign(:show_empty, show_empty)
+    |> assign(:servers_info, servers_info)
+    |> stream(:servers_info, servers_info, reset: true)
+
+    {:noreply, socket}
   end
 
   def handle_event("sort", %{"by" => field_str}, socket) do
@@ -73,9 +107,12 @@ defmodule LiveBrowserWeb.Browser do
       next -> List.keystore(socket.assigns.order, field, 0, {field, next})
     end
 
+    servers_info = socket.assigns.servers_info
+    |> apply_user_settings(socket.assigns.show_full, socket.assigns.show_empty, socket.assigns.order)
+
     socket = socket
     |> assign(:order, order)
-    |> assign(:servers_info, sort_servers(socket.assigns.servers_info, order))
+    |> assign(:servers_info, servers_info)
     |> stream(:servers_info, socket.assigns.servers_info, reset: true)
 
     {:noreply, socket}
@@ -87,6 +124,26 @@ defmodule LiveBrowserWeb.Browser do
       :desc -> nil
       nil -> :asc
     end
+  end
+
+  def apply_user_settings(servers, show_full, show_empty, order_opts) do
+    servers
+    |> sort_servers(order_opts)
+    |> filter_servers(show_full, show_empty)
+  end
+
+  defp filter_servers(servers, show_full, show_empty) when is_boolean(show_full) and is_boolean(show_empty) do
+    servers = case show_full do
+      true -> Enum.filter(servers, fn {_addr, info} -> info.players !== 100 end)
+      false -> servers
+    end
+
+    servers = case show_empty do
+      true -> Enum.filter(servers, fn {_addr, info} -> info.players !== 0 end)
+      false -> servers
+    end
+
+    servers
   end
 
   defp sort_servers(servers, order_opts) do
@@ -139,7 +196,3 @@ defmodule LiveBrowserWeb.Browser do
     end
   end
 end
-
-# <a class="inline-block align-text-top text-blue-500 h-6" href={"steam://connect/#{address}"}>
-#    <Heroicons.LiveView.icon name="arrow-top-right-on-square", type="outline", class="h-6 w-6" />
-# </a>
