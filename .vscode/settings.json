@@ -1,0 +1,11 @@
+{
+    "explorer.sortOrder": "mixed",
+    "emmet.includeLanguages": {
+        "phoenix-heex": "html",
+        "html.heex": "html"
+    },
+    "tailwindCSS.includeLanguages": {
+        "elixir": "html",
+        "phoenix-heex": "html"
+    }
+}
