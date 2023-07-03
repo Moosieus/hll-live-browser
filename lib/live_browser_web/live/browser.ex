@@ -1,122 +1,197 @@
 defmodule LiveBrowserWeb.Browser do
   use LiveBrowserWeb, :live_view
 
+  @filter_defs %{
+    hide_full: {:hide_full, &__MODULE__.filter_full/1},
+    hide_empty: {:hide_empty, &__MODULE__.filter_empty/1}
+  }
+
   def mount(_params, _session, socket) do
     if connected?(socket) do
       Phoenix.PubSub.subscribe(LiveBrowser.PubSub, "servers_info")
     end
 
     order = [{:players, :desc}]
-    show_full = true
-    show_empty = false
+    filters = [@filter_defs.hide_empty, min: &(&1.players >= 30), max: &(&1.players <= 100)]
 
     servers_info = GenServer.call(Quester.Cache, :servers_info)
-    |> apply_user_settings(show_full, show_empty, order)
+    |> apply_user_settings(filters, order)
 
     socket = socket
+    |> assign(:continents, [])
     |> assign(:order, order)
-    |> assign(:show_full, show_full)
-    |> assign(:show_empty, show_empty)
+    |> assign(:min, 30)
+    |> assign(:max, 100)
+    |> assign(:filters, filters)
     |> assign(:servers_info, servers_info)
     |> stream_configure(:servers_info, dom_id: fn {k, _v} -> "servers_info-#{k}" end)
     |> stream(:servers_info, servers_info)
 
-    # |> assign(:servers_info, servers_info)
-
     {:ok, socket}
   end
 
-  def handle_info(%{players: 0}, %{assigns: %{show_empty: false}} = socket) do
-    {:noreply, socket}
-  end
 
-  def handle_info(%{players: 100}, %{assigns: %{show_full: false}} = socket) do
-    {:noreply, socket}
-  end
+  # update from PubSub
+  def handle_info(info, %{assigns: %{servers_info: servers_info, order: order, filters: filters}} = socket) do
 
-  def handle_info(info, socket) do
-    case socket.assigns.order do
-      [] ->
-        # don't care where it ends up
-        socket
-        |> assign(:servers_info, List.keystore(socket.assigns.servers_info, info.address, 0, {info.address, info}))
-        |> stream_insert(:servers_info, {info.address, info})
-
+    cond do
+      apply_filters({info.address, info}, filters) === false ->
         {:noreply, socket}
-      order ->
+
+      order === [] ->
         # remove the existing item (if exists)
         socket = socket
-        |> assign(:servers_info, List.keydelete(socket.assigns.servers_info, info.address, 0))
+        |> assign(:servers_info, List.keydelete(servers_info, info.address, 0))
+        |> stream_delete_by_dom_id(:servers_info, "servers_info-#{info.address}")
+
+        {:noreply, socket}
+      true ->
+        # remove the existing item (if exists)
+        socket = socket
+        |> assign(:servers_info, List.keydelete(servers_info, info.address, 0))
         |> stream_delete_by_dom_id(:servers_info, "servers_info-#{info.address}")
 
         # find the right index to insert the new item (edge case: lots of churn when everything's the same)
-        index = case Enum.find_index(socket.assigns.servers_info, &(compare_servers({info.address, info}, &1, order))) do
-          nil -> Enum.count(socket.assigns.servers_info)
+        index = case Enum.find_index(servers_info, &(compare_servers({info.address, info}, &1, order))) do
+          nil -> Enum.count(servers_info)
           index -> index
         end
 
         # insert the new item
         socket = socket
-        |> assign(:servers_info, List.insert_at(socket.assigns.servers_info, index, {info.address, info}))
+        |> assign(:servers_info, List.insert_at(servers_info, index, {info.address, info}))
         |> stream_insert(:servers_info, {info.address, info}, at: index)
 
         {:noreply, socket}
     end
   end
 
-  # bad, should be general!
+  # set min/max players
+  def handle_event("set_range", %{"min" => min_str, "max" => max_str}, %{assigns: %{filters: filters, order: order}} = socket) do
 
-  def handle_event("toggle", %{"by" => "show_full"}, socket) do
-    show_full = !socket.assigns[:show_full]
+    min = case Integer.parse(min_str) do
+      {min, _} -> min
+      :error -> {:noreply, socket}
+    end
+
+    max = case Integer.parse(max_str) do
+      {max, _} -> max
+      :error -> {:noreply, socket}
+    end
+
+    filters = filters
+    |> Keyword.replace(:min, &(&1.players >= min))
+    |> Keyword.replace(:max, &(&1.players <= max))
 
     servers_info = GenServer.call(Quester.Cache, :servers_info)
-    |> apply_user_settings(show_full, socket.assigns.show_empty, socket.assigns.order)
+    |> apply_user_settings(filters, order)
 
     socket = socket
-    |> assign(:show_full, show_full)
+    |> assign(:min, min)
+    |> assign(:max, max)
+    |> assign(:filters, filters)
     |> assign(:servers_info, servers_info)
     |> stream(:servers_info, servers_info, reset: true)
 
     {:noreply, socket}
   end
 
-  def handle_event("toggle", %{"by" => "show_empty"}, socket) do
-    show_empty = !socket.assigns[:show_empty]
+  def handle_event("set_continents", %{"continents" => continents}, %{assigns: %{filters: filters, order: order}} = socket) do
+    filters = Keyword.put(filters, :continents, &(&1.location["continent"]["code"] in continents))
 
     servers_info = GenServer.call(Quester.Cache, :servers_info)
-    |> apply_user_settings(socket.assigns.show_full, show_empty, socket.assigns.order)
+    |> apply_user_settings(filters, order)
 
     socket = socket
-    |> assign(:show_empty, show_empty)
+    |> assign(:continents, continents)
+    |> assign(:filters, filters)
     |> assign(:servers_info, servers_info)
     |> stream(:servers_info, servers_info, reset: true)
 
     {:noreply, socket}
   end
 
-  def handle_event("sort", %{"by" => field_str}, socket) do
+  def handle_event("set_continents", _params, %{assigns: %{filters: filters, order: order}} = socket) do
+    filters = Keyword.delete(filters, :continents)
+
+    servers_info = GenServer.call(Quester.Cache, :servers_info)
+    |> apply_user_settings(filters, order)
+
+    socket = socket
+    |> assign(:continents, [])
+    |> assign(:filters, filters)
+    |> assign(:servers_info, servers_info)
+    |> stream(:servers_info, servers_info, reset: true)
+
+    {:noreply, socket}
+  end
+
+  # toggle filter
+  def handle_event("toggle", %{"by" => filter}, %{assigns: %{filters: filters, order: order}} = socket) do
+    filter = String.to_atom(filter)
+
+    filters =
+      case Keyword.get(filters, filter) do
+        nil -> [Map.fetch!(@filter_defs, filter) | filters]
+        _ -> Keyword.delete(filters, filter)
+      end
+
+    servers_info = GenServer.call(Quester.Cache, :servers_info)
+    |> apply_user_settings(filters, order)
+
+    socket = socket
+    |> assign(:filters, filters)
+    |> assign(:servers_info, servers_info)
+    |> stream(:servers_info, servers_info, reset: true)
+
+    {:noreply, socket}
+  end
+
+  # toggle sort
+  def handle_event("sort", %{"by" => field_str}, %{assigns: %{order: order, filters: filters, servers_info: servers_info}} = socket) do
     field = String.to_atom(field_str)
 
-    direction = case List.keyfind(socket.assigns.order, field, 0) do
+    direction = case List.keyfind(order, field, 0) do
       {_, direction} -> direction
       _ -> nil
     end
 
-    order = case cycle_direction(direction) do
-      nil  -> List.keydelete(socket.assigns.order, field, 0)
-      next -> List.keystore(socket.assigns.order, field, 0, {field, next})
-    end
+    order =
+      case cycle_direction(direction) do
+        nil  -> List.keydelete(order, field, 0)
+        next -> List.keystore(order, field, 0, {field, next})
+      end
 
-    servers_info = socket.assigns.servers_info
-    |> apply_user_settings(socket.assigns.show_full, socket.assigns.show_empty, socket.assigns.order)
+    servers_info = apply_user_settings(servers_info, filters, order)
 
     socket = socket
     |> assign(:order, order)
     |> assign(:servers_info, servers_info)
-    |> stream(:servers_info, socket.assigns.servers_info, reset: true)
+    |> stream(:servers_info, servers_info, reset: true)
 
     {:noreply, socket}
   end
+
+  def apply_user_settings(servers, filters, order_opts) do
+    servers
+    |> Enum.filter(&(apply_filters(&1, filters)))
+    |> sort_servers(order_opts)
+  end
+
+  def apply_filters(_server, []), do: true
+  def apply_filters({_addr, info}, filters) do
+    do_apply_filters(info, filters)
+  end
+
+  def do_apply_filters(_info, []), do: true
+  def do_apply_filters(info, [{_filter, filter_func} | rest]) do
+    case filter_func.(info) do
+      true -> do_apply_filters(info, rest)
+      false -> false
+    end
+  end
+
+  ## Filter definitions
 
   defp cycle_direction(order) do
     case order do
@@ -126,25 +201,13 @@ defmodule LiveBrowserWeb.Browser do
     end
   end
 
-  def apply_user_settings(servers, show_full, show_empty, order_opts) do
-    servers
-    |> sort_servers(order_opts)
-    |> filter_servers(show_full, show_empty)
-  end
+  def filter_full(%{players: 100}), do: false
+  def filter_full(_), do: true
 
-  defp filter_servers(servers, show_full, show_empty) when is_boolean(show_full) and is_boolean(show_empty) do
-    servers = case show_full do
-      true -> Enum.filter(servers, fn {_addr, info} -> info.players !== 100 end)
-      false -> servers
-    end
+  def filter_empty(%{players: 0}), do: false
+  def filter_empty(_), do: true
 
-    servers = case show_empty do
-      true -> Enum.filter(servers, fn {_addr, info} -> info.players !== 0 end)
-      false -> servers
-    end
-
-    servers
-  end
+  ## Sorting
 
   defp sort_servers(servers, order_opts) do
     Enum.sort(servers, &(compare_servers(&1, &2, order_opts)))
@@ -167,6 +230,8 @@ defmodule LiveBrowserWeb.Browser do
   end
 
   defp compare_servers(_i, _ii, []), do: true
+
+  ## Styles
 
   defp order_arrow_direction(order_opts, key) do
     case Keyword.get(order_opts, key) do
@@ -194,5 +259,17 @@ defmodule LiveBrowserWeb.Browser do
       "Utah" -> "Utah Beach"
       name -> name
     end
+  end
+
+  def continent_codes() do
+    %{
+      "AF" => "Africa",
+      # "AN" => "Antarctica", # lol
+      "AS" => "Asia",
+      "EU" => "Europe",
+      "NA" =>	"North america",
+      "OC" =>	"Oceania",
+      "SA" => "South America"
+    }
   end
 end

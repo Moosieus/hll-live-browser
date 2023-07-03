@@ -21,7 +21,7 @@ defmodule LiveBrowser.Application do
       LiveBrowserWeb.Endpoint,
       # Start a worker by calling: LiveBrowser.Worker.start_link(arg)
       # {LiveBrowser.Worker, arg}
-
+      :locus.loader_child_spec(:city, "/Users/cameronduley/Library/Caches/locus_erlang/GeoLite2-City.mmdb.gz"),
       {Quester, [finch: Quester.Finch, udp_port: 20850]}
     ]
 

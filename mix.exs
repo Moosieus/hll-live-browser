@@ -53,6 +53,7 @@ defmodule LiveBrowser.MixProject do
       {:plug_cowboy, "~> 2.5"},
       # project deps
       {:elixir_a2s, "~> 0.3.2"},
+      {:locus, "~> 2.3.6"},
       {:ex_heroicons, "~> 2.0.0"},
       {:bandit, "~> 1.0-pre"}
     ]

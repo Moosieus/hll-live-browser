@@ -16,6 +16,9 @@ config :live_browser,
   udp_port: 20850,
   steam_api_key: System.get_env("STEAM_API_KEY")
 
+config :locus,
+  license_key: System.get_env("MAXMIND_LICENSE_KEY")
+
 # Configures the endpoint
 config :live_browser, LiveBrowserWeb.Endpoint,
   url: [host: "localhost"],

@@ -17,8 +17,44 @@
           </select>
         </label>-->
         <!-- These need to have internal state! -->
-        <LiveBrowserWeb.Toggle.render label="Hide Full" toggled={@show_full} phx-click="toggle" phx-value-by="show_full" />
-        <LiveBrowserWeb.Toggle.render label="Hide Empty" toggled={@show_empty} class="pt-3" phx-click="toggle" phx-value-by="show_empty" />
+        <LiveBrowserWeb.Toggle.render label="Hide Full" toggled={Keyword.has_key?(@filters, :hide_full)} phx-click="toggle" phx-value-by="hide_full" />
+        <LiveBrowserWeb.Toggle.render label="Hide Empty" toggled={Keyword.has_key?(@filters, :hide_empty)} class="pt-3" phx-click="toggle" phx-value-by="hide_empty" />
+        <div class="pt-3">
+          <label class="block text-sm font-medium leading-6 text-gray-900">Min - Max Players</label>
+          <form class="flex items-center mt-1" phx-change="set_range">
+            <input
+              type="number"
+              class="w-20 block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              min="0"
+              max="100"
+              name="min"
+              value={@min}
+            >
+            <Heroicons.LiveView.icon name="minus" type="outline" class="inline h-6 w-6" />
+            <input
+              type="number"
+              class="w-20 block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              min="1"
+              max="100"
+              name="max"
+              value={@max}
+            >
+          </form>
+        </div>
+        <div class="pt-3">
+          <label class="block text-sm font-medium leading-6 text-gray-900">Continent</label>
+          <form phx-change="set_continents">
+            <div class="flex items-center" :for={{iso_code, name} <- continent_codes()} >
+              <input type="checkbox" name="continents[]" value={iso_code} checked={iso_code in @continents}>
+              <span class="ml-2"><%= name %></span>
+            </div>
+          </form>
+        </div>
+        <div class="pt-3">
+          <div :for={{k, v} <- @filters}>
+            <%= Kernel.inspect({k,v}) %>
+          </div>
+        </div>
       </div>
   </div>
 
@@ -32,6 +68,9 @@
             <button phx-click="sort" phx-value-by="name">
               <Heroicons.LiveView.icon name={order_arrow_direction(@order, :name)} type="outline" class="inline h-6 w-6" />
             </button>
+          </th>
+          <th class="text-lg py-3 text-center">
+            <span class="align-middle">Region</span>
           </th>
           <th class="text-lg py-3 text-center">
             <span class="align-middle">Players</span>
@@ -52,6 +91,14 @@
               </a>
             </div>
             <div class="text-gray-500"><%= map_full_name(server.map) %></div>
+          </td>
+          <td class="py-2 text-center">
+            <%= server.location["city"]["names"]["en"] %>
+            <%= server.location["country"]["subdivisions"][0]["en"] %>
+            <%= server.location["country"]["iso_code"] %>
+            
+            <!--/ <%= server.location["continent"]["code"] %>
+            <%= Kernel.inspect(server.location) %>-->
           </td>
           <td class="py-2 text-center"><%= server.players %>/<%= server.max_players %></td>
           <td class="py-2 text-center"><%= server.last_changed %></td>

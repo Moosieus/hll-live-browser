@@ -31,13 +31,14 @@ defmodule Quester.Cache do
   end
 
   @impl true
+  # get info for all servers
   def handle_call(:servers_info, _from, servers) do
     {:reply, servers, servers}
   end
 
   @impl true
+  # get info for a specific server
   def handle_call({:get_info, address}, _from, servers) do
-
     reply = case List.keyfind(servers, address, 0) do
       {_address, info} -> info
       nil -> nil

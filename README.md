@@ -18,3 +18,9 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
   * Docs: https://hexdocs.pm/phoenix
   * Forum: https://elixirforum.com/c/phoenix-forum
   * Source: https://github.com/phoenixframework/phoenix
+
+
+## Todo
+- Add proper validation on min/max input
+- Implement pagination or some better rendering
+- IP geolocation

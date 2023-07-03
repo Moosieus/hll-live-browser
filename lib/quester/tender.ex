@@ -111,6 +111,19 @@ defmodule Quester.Tender do
     |> Map.put(:address, address_to_string(address))
     |> Map.put(:last_changed, Time.truncate(Time.utc_now(), :second))
 
+    location =
+      case :locus.lookup(:city, address_to_ip_string(address)) do
+        {:ok, location} ->
+          location
+        :not_found ->
+          :unknown
+        {:error, reason} ->
+          # add a log here!
+          :unknown
+      end
+
+    info = Map.put(info, :location, location)
+
     if changed?(info) do
       :ok = PubSub.broadcast(LiveBrowser.PubSub, "servers_info", info)
     end
@@ -148,5 +161,9 @@ defmodule Quester.Tender do
 
   defp address_to_string({{part_i, part_ii, part_iii, part_iv}, port}) do
     "#{part_i}.#{part_ii}.#{part_iii}.#{part_iv}:#{port}"
+  end
+
+  defp address_to_ip_string({{part_i, part_ii, part_iii, part_iv}, _port}) do
+    "#{part_i}.#{part_ii}.#{part_iii}.#{part_iv}"
   end
 end
