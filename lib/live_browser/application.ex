@@ -7,6 +7,9 @@ defmodule LiveBrowser.Application do
 
   @impl true
   def start(_type, _args) do
+
+    Logger.add_translator({Quester.GenStateMTranslator, :translate})
+
     children = [
       # Start the Telemetry supervisor
       LiveBrowserWeb.Telemetry,

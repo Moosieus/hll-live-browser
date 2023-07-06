@@ -63,7 +63,7 @@ defmodule Quester.Tender do
 
       {:multipacket, part} ->
         # Logger.debug("got multipacket", Logger.metadata())
-        {:next_state, :collect_multipacket, {address, last_sent, [part]}, recv_timeout()}
+        {:next_state, :await_multipacket, {address, last_sent, [part]}, recv_timeout()}
     end
   end
 
@@ -74,12 +74,12 @@ defmodule Quester.Tender do
         report_and_next(msg, data)
 
       {:multipacket, {header, _body} = part} ->
-        {:next_state, :collect_multipacket, {address, last_sent, header.total, [part]}, recv_timeout()}
+        {:next_state, :await_multipacket, {address, last_sent, header.total, [part]}, recv_timeout()}
     end
   end
 
   @impl :gen_statem
-  def handle_event(:cast, packet, :collect_multipacket, {address, last_sent, total, parts}) do
+  def handle_event(:cast, packet, :await_multipacket, {address, last_sent, total, parts}) do
     {:multipacket, part} = A2S.parse_response(packet)
     parts = [part | parts]
 
@@ -88,19 +88,18 @@ defmodule Quester.Tender do
       |> A2S.parse_multipacket_response()
       |> report_and_next({address, last_sent})
     else
-      {:next_state, :collect_multipacket, {address, last_sent, total, parts}, recv_timeout()}
+      {:next_state, :await_multipacket, {address, last_sent, total, parts}, recv_timeout()}
     end
   end
 
   ## Timeout
 
-  def handle_event(:state_timeout, :recv_timeout, state, data) do
-    IO.inspect([:timeout, {state, data}, Time.utc_now()])
+  def handle_event(:state_timeout, :await_timeout, state, data) do
     {:stop, {:timeout, {state, data}}} # stop and don't reset
   end
 
   defp recv_timeout() do
-    {:state_timeout, 3000, :recv_timeout}
+    {:state_timeout, 3000, :await_timeout}
   end
 
   ## Functions
@@ -117,7 +116,7 @@ defmodule Quester.Tender do
           location
         :not_found ->
           :unknown
-        {:error, reason} ->
+        {:error, _reason} ->
           # add a log here!
           :unknown
       end

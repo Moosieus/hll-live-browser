@@ -12,7 +12,7 @@ defmodule LiveBrowserWeb.Browser do
     end
 
     order = [{:players, :desc}]
-    filters = [@filter_defs.hide_empty, min: &(&1.players >= 30), max: &(&1.players <= 100)]
+    filters = [@filter_defs.hide_empty, min: &(&1.players >= 30), max: &(&1.players <= 85)]
 
     servers_info = GenServer.call(Quester.Cache, :servers_info)
     |> apply_user_settings(filters, order)
@@ -21,7 +21,7 @@ defmodule LiveBrowserWeb.Browser do
     |> assign(:continents, [])
     |> assign(:order, order)
     |> assign(:min, 30)
-    |> assign(:max, 100)
+    |> assign(:max, 85)
     |> assign(:filters, filters)
     |> assign(:servers_info, servers_info)
     |> stream_configure(:servers_info, dom_id: fn {k, _v} -> "servers_info-#{k}" end)
@@ -271,5 +271,27 @@ defmodule LiveBrowserWeb.Browser do
       "OC" =>	"Oceania",
       "SA" => "South America"
     }
+  end
+
+  def country_name(location) do
+    case location["country"]["names"]["en"] do
+      nil -> "unavailable"
+      name -> name
+    end
+  end
+
+  def region_name(location) do
+    city = location["city"]["names"]["en"]
+
+    subdivision =
+      case location["subdivisions"] do
+        nil -> nil
+        [] -> nil
+        [first | _rest] -> first["iso_code"]
+      end
+
+    [city, subdivision]
+    |> Enum.filter(&(&1 !== nil))
+    |> Enum.join(", ")
   end
 end

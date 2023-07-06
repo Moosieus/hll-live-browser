@@ -62,8 +62,7 @@ config :tailwind,
   ]
 
 config :logger,
-  handle_otp_reports: true,
-  handle_sasl_reports: true
+  handle_otp_reports: true
 
 # Configures Elixir's Logger
 config :logger, :console,

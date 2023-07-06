@@ -50,11 +50,6 @@
             </div>
           </form>
         </div>
-        <div class="pt-3">
-          <div :for={{k, v} <- @filters}>
-            <%= Kernel.inspect({k,v}) %>
-          </div>
-        </div>
       </div>
   </div>
 
@@ -68,6 +63,9 @@
             <button phx-click="sort" phx-value-by="name">
               <Heroicons.LiveView.icon name={order_arrow_direction(@order, :name)} type="outline" class="inline h-6 w-6" />
             </button>
+          </th>
+          <th class="text-lg py-3 text-center">
+            <span class="align-middle">Country</span>
           </th>
           <th class="text-lg py-3 text-center">
             <span class="align-middle">Region</span>
@@ -93,12 +91,10 @@
             <div class="text-gray-500"><%= map_full_name(server.map) %></div>
           </td>
           <td class="py-2 text-center">
-            <%= server.location["city"]["names"]["en"] %>
-            <%= server.location["country"]["subdivisions"][0]["en"] %>
-            <%= server.location["country"]["iso_code"] %>
-            
-            <!--/ <%= server.location["continent"]["code"] %>
-            <%= Kernel.inspect(server.location) %>-->
+            <%= country_name(server.location) %>
+          </td>
+          <td class="py-2 text-center">
+            <%= region_name(server.location) %>
           </td>
           <td class="py-2 text-center"><%= server.players %>/<%= server.max_players %></td>
           <td class="py-2 text-center"><%= server.last_changed %></td>
