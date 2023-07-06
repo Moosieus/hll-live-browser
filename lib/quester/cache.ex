@@ -22,7 +22,7 @@ defmodule Quester.Cache do
   end
 
   @impl true
-  def handle_info(info, servers) do
+  def handle_info({:update_info, info}, servers) do
     # {:noreply, Map.put(servers, info.address, info)}
     servers = servers
     |> List.keystore(info.address, 0, {info.address, info})

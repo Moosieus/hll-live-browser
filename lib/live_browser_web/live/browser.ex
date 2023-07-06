@@ -1,27 +1,19 @@
 defmodule LiveBrowserWeb.Browser do
   use LiveBrowserWeb, :live_view
 
-  @filter_defs %{
-    hide_full: {:hide_full, &__MODULE__.filter_full/1},
-    hide_empty: {:hide_empty, &__MODULE__.filter_empty/1}
-  }
-
   def mount(_params, _session, socket) do
     if connected?(socket) do
       Phoenix.PubSub.subscribe(LiveBrowser.PubSub, "servers_info")
     end
 
+    filters = [min: &(&1.players >= 30), max: &(&1.players <= 85)]
     order = [{:players, :desc}]
-    filters = [@filter_defs.hide_empty, min: &(&1.players >= 30), max: &(&1.players <= 85)]
 
     servers_info = GenServer.call(Quester.Cache, :servers_info)
     |> apply_user_settings(filters, order)
 
     socket = socket
-    |> assign(:continents, [])
     |> assign(:order, order)
-    |> assign(:min, 30)
-    |> assign(:max, 85)
     |> assign(:filters, filters)
     |> assign(:servers_info, servers_info)
     |> stream_configure(:servers_info, dom_id: fn {k, _v} -> "servers_info-#{k}" end)
@@ -30,26 +22,36 @@ defmodule LiveBrowserWeb.Browser do
     {:ok, socket}
   end
 
-
   # update from PubSub
-  def handle_info(info, %{assigns: %{servers_info: servers_info, order: order, filters: filters}} = socket) do
+  def handle_info({:update_info, info}, %{assigns: %{servers_info: servers_info, order: [], filters: []}} = socket) do
+    socket = socket
+    |> assign(:servers_info, List.keydelete(servers_info, info.address, 0))
+    |> stream_delete_by_dom_id(:servers_info, "servers_info-#{info.address}")
 
-    cond do
-      apply_filters({info.address, info}, filters) === false ->
+    {:noreply, socket}
+  end
+
+  def handle_info({:update_info, info}, %{assigns: %{servers_info: servers_info, order: [], filters: filters}} = socket) do
+    case apply_filters({info.address, info}, filters) do
+      false ->
         {:noreply, socket}
-
-      order === [] ->
-        # remove the existing item (if exists)
+      true ->
         socket = socket
         |> assign(:servers_info, List.keydelete(servers_info, info.address, 0))
         |> stream_delete_by_dom_id(:servers_info, "servers_info-#{info.address}")
 
+        {:noreply, socket}
+    end
+  end
+
+  def handle_info({:update_info, info}, %{assigns: %{servers_info: servers_info, order: order, filters: filters}} = socket) do
+    case apply_filters({info.address, info}, filters) do
+      false ->
         {:noreply, socket}
       true ->
         # remove the existing item (if exists)
-        socket = socket
-        |> assign(:servers_info, List.keydelete(servers_info, info.address, 0))
-        |> stream_delete_by_dom_id(:servers_info, "servers_info-#{info.address}")
+        socket = stream_delete_by_dom_id(socket, :servers_info, "servers_info-#{info.address}")
+        servers_info = List.keydelete(servers_info, info.address, 0)
 
         # find the right index to insert the new item (edge case: lots of churn when everything's the same)
         index = case Enum.find_index(servers_info, &(compare_servers({info.address, info}, &1, order))) do
@@ -66,75 +68,8 @@ defmodule LiveBrowserWeb.Browser do
     end
   end
 
-  # set min/max players
-  def handle_event("set_range", %{"min" => min_str, "max" => max_str}, %{assigns: %{filters: filters, order: order}} = socket) do
-
-    min = case Integer.parse(min_str) do
-      {min, _} -> min
-      :error -> {:noreply, socket}
-    end
-
-    max = case Integer.parse(max_str) do
-      {max, _} -> max
-      :error -> {:noreply, socket}
-    end
-
-    filters = filters
-    |> Keyword.replace(:min, &(&1.players >= min))
-    |> Keyword.replace(:max, &(&1.players <= max))
-
-    servers_info = GenServer.call(Quester.Cache, :servers_info)
-    |> apply_user_settings(filters, order)
-
-    socket = socket
-    |> assign(:min, min)
-    |> assign(:max, max)
-    |> assign(:filters, filters)
-    |> assign(:servers_info, servers_info)
-    |> stream(:servers_info, servers_info, reset: true)
-
-    {:noreply, socket}
-  end
-
-  def handle_event("set_continents", %{"continents" => continents}, %{assigns: %{filters: filters, order: order}} = socket) do
-    filters = Keyword.put(filters, :continents, &(&1.location["continent"]["code"] in continents))
-
-    servers_info = GenServer.call(Quester.Cache, :servers_info)
-    |> apply_user_settings(filters, order)
-
-    socket = socket
-    |> assign(:continents, continents)
-    |> assign(:filters, filters)
-    |> assign(:servers_info, servers_info)
-    |> stream(:servers_info, servers_info, reset: true)
-
-    {:noreply, socket}
-  end
-
-  def handle_event("set_continents", _params, %{assigns: %{filters: filters, order: order}} = socket) do
-    filters = Keyword.delete(filters, :continents)
-
-    servers_info = GenServer.call(Quester.Cache, :servers_info)
-    |> apply_user_settings(filters, order)
-
-    socket = socket
-    |> assign(:continents, [])
-    |> assign(:filters, filters)
-    |> assign(:servers_info, servers_info)
-    |> stream(:servers_info, servers_info, reset: true)
-
-    {:noreply, socket}
-  end
-
-  # toggle filter
-  def handle_event("toggle", %{"by" => filter}, %{assigns: %{filters: filters, order: order}} = socket) do
-    filter = String.to_atom(filter)
-
-    filters =
-      case Keyword.get(filters, filter) do
-        nil -> [Map.fetch!(@filter_defs, filter) | filters]
-        _ -> Keyword.delete(filters, filter)
-      end
+  # update filters
+  def handle_info({:update_filters, filters}, %{assigns: %{order: order}} = socket) do
 
     servers_info = GenServer.call(Quester.Cache, :servers_info)
     |> apply_user_settings(filters, order)
@@ -231,7 +166,7 @@ defmodule LiveBrowserWeb.Browser do
 
   defp compare_servers(_i, _ii, []), do: true
 
-  ## Styles
+  ## Style Functions
 
   defp order_arrow_direction(order_opts, key) do
     case Keyword.get(order_opts, key) do
@@ -259,18 +194,6 @@ defmodule LiveBrowserWeb.Browser do
       "Utah" -> "Utah Beach"
       name -> name
     end
-  end
-
-  def continent_codes() do
-    %{
-      "AF" => "Africa",
-      # "AN" => "Antarctica", # lol
-      "AS" => "Asia",
-      "EU" => "Europe",
-      "NA" =>	"North america",
-      "OC" =>	"Oceania",
-      "SA" => "South America"
-    }
   end
 
   def country_name(location) do

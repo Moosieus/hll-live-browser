@@ -124,7 +124,7 @@ defmodule Quester.Tender do
     info = Map.put(info, :location, location)
 
     if changed?(info) do
-      :ok = PubSub.broadcast(LiveBrowser.PubSub, "servers_info", info)
+      :ok = PubSub.broadcast(LiveBrowser.PubSub, "servers_info", {:update_info, info})
     end
 
     sleep(last_sent)
