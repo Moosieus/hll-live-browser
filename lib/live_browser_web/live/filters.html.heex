@@ -1,29 +1,31 @@
 <%# Filters Column %>
-<div class="col-span-2">
+<div class="min-w-fit">
   <div class="text-lg py-3 text-left font-bold mb-[2px]">
     <span>Filters</span>
     <Heroicons.LiveView.icon name="adjustments-horizontal" type="outline" class="inline h-6 w-6" />
   </div>
     <div class="border-gray-300 border-t-[1px] py-3">
-      <div class="pt-3">
+      <div>
         <label class="block text-sm font-medium leading-6 text-gray-900">Min - Max Players</label>
         <form class="flex items-center mt-1" phx-change="set_range" phx-target={@myself}>
           <input
             type="number"
-            class="w-20 block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            class="w-16 block border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
             min="0"
             max="100"
             name="min"
             value={@min}
+            phx-debounce="300"
           >
           <Heroicons.LiveView.icon name="minus" type="outline" class="inline h-6 w-6" />
           <input
             type="number"
-            class="w-20 block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            class="w-16 block border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
             min="1"
             max="100"
             name="max"
             value={@max}
+            phx-debounce="300"
           >
         </form>
       </div>
