@@ -1,0 +1,72 @@
+
+@font-face {
+	font-family: 'Iosevka - LiveBrowser Web';
+	font-display: swap;
+	font-weight: 300;
+	font-stretch: normal;
+	font-style: normal;
+	src: url('/fonts/iosevka-live-browser-light.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Iosevka - LiveBrowser Web';
+	font-display: swap;
+	font-weight: 300;
+	font-stretch: expanded;
+	font-style: normal;
+	src: url('/fonts/iosevka-live-browser-extendedlight.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Iosevka - LiveBrowser Web';
+	font-display: swap;
+	font-weight: 400;
+	font-stretch: normal;
+	font-style: normal;
+	src: url('/fonts/iosevka-live-browser-regular.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Iosevka - LiveBrowser Web';
+	font-display: swap;
+	font-weight: 400;
+	font-stretch: expanded;
+	font-style: normal;
+	src: url('/fonts/iosevka-live-browser-extended.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Iosevka - LiveBrowser Web';
+	font-display: swap;
+	font-weight: 700;
+	font-stretch: normal;
+	font-style: normal;
+	src: url('/fonts/iosevka-live-browser-bold.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Iosevka - LiveBrowser Web';
+	font-display: swap;
+	font-weight: 700;
+	font-stretch: expanded;
+	font-style: normal;
+	src: url('/fonts/iosevka-live-browser-extendedbold.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Iosevka - LiveBrowser Web';
+	font-display: swap;
+	font-weight: 900;
+	font-stretch: normal;
+	font-style: normal;
+	src: url('/fonts/iosevka-live-browser-heavy.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Iosevka - LiveBrowser Web';
+	font-display: swap;
+	font-weight: 900;
+	font-stretch: expanded;
+	font-style: normal;
+	src: url('/fonts/iosevka-live-browser-extendedheavy.woff2') format('woff2');
+}

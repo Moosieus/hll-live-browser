@@ -17,6 +17,9 @@ module.exports = {
         brand: "#FD4F00",
       }
     },
+    fontFamily: {
+      'sans': ['"Iosevka - LiveBrowser Web"'],
+    }
   },
   plugins: [
     require("@tailwindcss/forms"),
