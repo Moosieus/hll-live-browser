@@ -3,7 +3,7 @@
   <div class="grow">
     <table class="min-w-full divide-y divide-gray-300">
       <thead>
-        <tr class="divide-x divide-gray-200">
+        <tr class="h-14 divide-x divide-gray-200">
           <th class="text-lg py-3 text-left">
             <span class="align-middle">Server</span>
             <button phx-click="sort" phx-value-by="name">
@@ -45,7 +45,7 @@
             <%= region_name(server.location) %>
           </td>
           <td class="py-2 text-center"><%= server.players %>/<%= server.max_players %></td>
-          <td class="py-2 text-center"><%= server.last_changed %></td>
+          <td id={"#{dom_addr_id}-last_changed"} class="py-2 text-center" phx-hook="locale_time"><%= server.last_changed %></td>
         </tr>
       </tbody>
     </table>

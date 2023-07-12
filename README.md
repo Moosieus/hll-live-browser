@@ -12,15 +12,15 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
 ## Learn more
-
   * Official website: https://www.phoenixframework.org/
   * Guides: https://hexdocs.pm/phoenix/overview.html
   * Docs: https://hexdocs.pm/phoenix
   * Forum: https://elixirforum.com/c/phoenix-forum
   * Source: https://github.com/phoenixframework/phoenix
 
-
 ## Todo
 - Add proper validation on min/max input
-- Implement pagination or some better rendering
-- IP geolocation
+- Investigate rendering w/ assigns + LiveComponents
+- Add "No results" message
+- Add frontend theme w/ dark mode
+- Format timestamps to local timezones

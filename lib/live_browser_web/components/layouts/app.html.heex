@@ -1,11 +1,14 @@
 <header class="px-4 sm:px-6 lg:px-8">
-  <div class="flex items-center justify-between border-b border-gray-300 py-3 text-sm">
-    <div class="flex items-center gap-4">
+  <div class="border-b border-gray-300 py-3">
+    <div class="flex flex-row justify-between items-center gap-4">
       <h1 class="text-xl">HLL Live Server Browser</h1>
+      <div class="text-gray-600">
+        This is a <a class="text-blue-400 hover:underline" href="https://github.com/Moosieus/hll-live-browser" target="_blank">fan-made tool</a>. Hell Let Loose is owned by Team17.
+      </div>
     </div>
   </div>
 </header>
-<main class="px-4 py-8 sm:px-6 lg:px-8">
+<main class="px-4 py-6 sm:px-6 lg:px-8">
   <div class="mx-auto">
     <.flash_group flash={@flash} />
     <%= @inner_content %>

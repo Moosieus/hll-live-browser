@@ -11,33 +11,34 @@ defmodule LiveBrowserWeb.Filters do
     |> assign(:continents, [])
     |> assign(:min, 30)
     |> assign(:max, 85)
+    |> assign(:range_valid, true)
 
     {:ok, socket}
   end
 
   # set min/max players (todo: add validation)
   def handle_event("set_range", %{"min" => min_str, "max" => max_str}, %{assigns: %{filters: filters}} = socket) do
-    min = case Integer.parse(min_str) do
-      {min, _} -> min
-      :error -> {:noreply, socket}
+
+    case range_valid(min_str, max_str) do
+      {min, max} ->
+        socket = socket
+        |> assign(:range_valid, true)
+        |> assign(:min, min)
+        |> assign(:max, max)
+
+        filters = filters
+        |> Keyword.put(:min, &(&1.players >= min))
+        |> Keyword.put(:max, &(&1.players <= max))
+
+        send(self(), {:update_filters, filters})
+
+        {:noreply, socket}
+      false ->
+        socket = socket
+        |> assign(:range_valid, false)
+
+        {:noreply, socket}
     end
-
-    max = case Integer.parse(max_str) do
-      {max, _} -> max
-      :error -> {:noreply, socket}
-    end
-
-    socket = socket
-    |> assign(:min, min)
-    |> assign(:max, max)
-
-    filters = filters
-    |> Keyword.put(:min, &(&1.players >= min))
-    |> Keyword.put(:max, &(&1.players <= max))
-
-    send(self(), {:update_filters, filters})
-
-    {:noreply, socket}
   end
 
   def handle_event("set_continents", %{"continents" => continents}, %{assigns: %{filters: filters}} = socket) do
@@ -45,7 +46,7 @@ defmodule LiveBrowserWeb.Filters do
 
     send(self(), {:update_filters, filters})
 
-    {:noreply, socket}
+    {:noreply, assign(socket, :continents, continents)}
   end
 
   def handle_event("set_continents", _params, %{assigns: %{filters: filters}} = socket) do
@@ -53,12 +54,12 @@ defmodule LiveBrowserWeb.Filters do
 
     send(self(), {:update_filters, filters})
 
-    {:noreply, socket}
+    {:noreply, assign(socket, :continents, [])}
   end
 
   def continent_codes() do
     %{
-      "AF" => "Africa",
+      # "AF" => "Africa", (There's no servers in Africa)
       # "AN" => "Antarctica", (lol)
       "AS" => "Asia",
       "EU" => "Europe",
@@ -66,5 +67,15 @@ defmodule LiveBrowserWeb.Filters do
       "OC" =>	"Oceania",
       "SA" => "South America"
     }
+  end
+
+  def range_valid(min_str, max_str) do
+    with  {min, ""} <- Integer.parse(min_str),
+          {max, ""} <- Integer.parse(max_str),
+          true <- (min >= 0 and max <= 100 and min <= max) do
+      {min, max}
+    else _ ->
+      false
+    end
   end
 end
