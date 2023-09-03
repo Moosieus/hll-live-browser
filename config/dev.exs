@@ -29,6 +29,10 @@ config :live_browser, LiveBrowserWeb.Endpoint,
     tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]
 
+# NOTE: Fresh dev setups need to run locus manually at least once.
+config :locus,
+  load_from: "/Users/cameronduley/Library/Caches/locus_erlang/GeoLite2-City.mmdb.gz"
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed

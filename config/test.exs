@@ -13,6 +13,9 @@ config :live_browser, LiveBrowser.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 
+config :locus,
+  load_from: "/Users/cameronduley/Library/Caches/locus_erlang/GeoLite2-City.mmdb.gz"
+
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :live_browser, LiveBrowserWeb.Endpoint,

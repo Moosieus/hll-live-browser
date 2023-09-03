@@ -24,7 +24,7 @@ defmodule LiveBrowser.Application do
       LiveBrowserWeb.Endpoint,
       # Start a worker by calling: LiveBrowser.Worker.start_link(arg)
       # {LiveBrowser.Worker, arg}
-      :locus.loader_child_spec(:city, "/Users/cameronduley/Library/Caches/locus_erlang/GeoLite2-City.mmdb.gz"),
+      :locus.loader_child_spec(:city, ip_geo_database()),
       {Quester, [finch: Quester.Finch, udp_port: 20850]}
     ]
 
@@ -40,5 +40,9 @@ defmodule LiveBrowser.Application do
   def config_change(changed, _new, removed) do
     LiveBrowserWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp ip_geo_database() do
+    Application.fetch_env!(:locus, :load_from)
   end
 end
