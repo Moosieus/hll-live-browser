@@ -55,7 +55,8 @@ defmodule LiveBrowser.MixProject do
       {:elixir_a2s, "~> 0.3.2"},
       {:locus, "~> 2.3.6"},
       {:ex_heroicons, "~> 2.0.0"},
-      {:bandit, "~> 1.0-pre"}
+      {:bandit, "~> 1.0-pre"},
+      {:uni_recover, "~> 0.1.0"}
     ]
   end
 

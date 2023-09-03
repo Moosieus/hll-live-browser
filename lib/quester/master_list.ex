@@ -13,14 +13,6 @@ defmodule Quester.MasterList do
 
   require Logger
 
-  # Fully form request at compile time
-
-  @appid Application.compile_env!(:live_browser, :appid)
-
-  @limit Application.compile_env!(:live_browser, :limit)
-
-  @interval Application.compile_env!(:live_browser, :master_list_interval)
-
   defmodule Server do
     @moduledoc """
     Represents a single server entry from the master list query. Only retains the fields we care about.
@@ -58,7 +50,7 @@ defmodule Quester.MasterList do
       Process.sleep(100) # bodge until I can figure out a way around {:error, :eagain} from the socket
     end)
 
-    Process.send_after(self(), :loop, @interval)
+    Process.send_after(self(), :loop, query_interval())
     {:noreply, {finch, current}}
   end
 
@@ -89,11 +81,25 @@ defmodule Quester.MasterList do
       end
     end)
 
-    Process.send_after(self(), :loop, @interval)
+    Process.send_after(self(), :loop, query_interval())
     {:noreply, current}
   end
 
-  ## Functions
+  ## Configuration
+
+  defp appid() do
+    Application.fetch_env!(:live_browser, :appid)
+  end
+
+  defp query_interval() do
+    Application.fetch_env!(:live_browser, :master_list_interval) * 1000 * 60
+  end
+
+  defp limit() do
+    Application.fetch_env!(:live_browser, :limit)
+  end
+
+  ## Query and parsing logic
 
   @spec query_master_list(any()) :: {:ok, %{String => %Server{}}} | {:error, Exception.t()}
   defp query_master_list(finch) do
@@ -102,7 +108,7 @@ defmodule Quester.MasterList do
 
     request = Finch.build(
       :get, "http://api.steampowered.com/IGameServersService/GetServerList/v1/?" <> URI.encode_query(
-        [key: steam_api_key, filter: "\\appid\\#{@appid}", limit: @limit]
+        [key: steam_api_key, filter: "\\appid\\#{appid()}", limit: limit()]
       ),
       [{"Accept", "application/json"}]
     )
@@ -114,22 +120,37 @@ defmodule Quester.MasterList do
   end
 
   defp parse_server_list(body) do
-    {:ok, %{response: %{servers: servers}}} = Jason.decode(body, [keys: :atoms])
-
-    servers = Enum.map(servers, fn server ->
-      [ip, port] = String.split(server[:addr], ":")
-
-      ip = ip
-      |> String.split(".")
-      |> Enum.map(fn i -> String.to_integer(i) end)
-      |> List.to_tuple()
-
-      port = String.to_integer(port)
-
-      %{server | addr: {ip, port}}
-    end)
+    servers =
+      parse_response_body(body)
+      |> Enum.map(&put_ip_address/1)
 
     {:ok, servers}
+  end
+
+  defp parse_response_body(body) do
+    decode_opts = [keys: :atoms]
+
+    # Attempt recovering from illegal UTF-8. If that doesn't work, explode.
+    case Jason.decode(body, decode_opts) do
+      {:ok, %{response: %{servers: servers}}} ->
+        servers
+      {:error, _} ->
+        %{response: %{servers: servers}} = Jason.decode!(UniRecover.sub(body), decode_opts)
+        servers
+    end
+  end
+
+  def put_ip_address(server) do
+    [ip, port] = String.split(server[:addr], ":")
+
+    ip = ip
+    |> String.split(".")
+    |> Enum.map(fn i -> String.to_integer(i) end)
+    |> List.to_tuple()
+
+    port = String.to_integer(port)
+
+    %{server | addr: {ip, port}}
   end
 
   defp key_by_address(servers) do

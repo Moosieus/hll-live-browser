@@ -10,8 +10,8 @@ import Config
 config :live_browser,
   ecto_repos: [LiveBrowser.Repo],
   appid: 686810,
-  master_list_interval: 1000 * 60 * 5, # 5 minutes
-  tender_interval: 15, # 10 seconds
+  master_list_interval: 5, # minutes
+  tender_interval: 15, # seconds
   limit: 10_000,
   udp_port: 20850,
   steam_api_key: System.get_env("STEAM_API_KEY")
