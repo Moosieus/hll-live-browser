@@ -18,7 +18,7 @@ module.exports = {
       }
     },
     fontFamily: {
-      'sans': ['"Iosevka - LiveBrowser Web"'],
+      'sans': ['Iosevka LiveBrowser Web'],
     }
   },
   plugins: [
