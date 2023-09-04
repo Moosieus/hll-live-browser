@@ -5,8 +5,6 @@ defmodule Quester.UDP do
 
   use GenServer
 
-  @udp_port Application.compile_env!(:live_browser, :udp_port)
-
   ## API
 
   def start_link(opts) do
@@ -17,7 +15,7 @@ defmodule Quester.UDP do
 
   @impl true
   def init(_config) do
-    case :gen_udp.open(@udp_port, [:binary, active: true]) do
+    case :gen_udp.open(udp_port(), [:binary, active: true] ++ udp_socket_opts()) do
       {:error, reason} -> {:stop, reason}
       {:ok, socket} -> {:ok, socket}
     end
@@ -47,4 +45,17 @@ defmodule Quester.UDP do
   ## Functions
 
   defp via_registry(name), do: {:via, Registry, {:quester_registry, name}}
+
+  defp udp_socket_opts() do
+    case Application.get_env(:live_browser, :use_fly_ip) do
+      true ->
+        {:ok, addr} = :inet.getaddr('fly-global-services', :inet)
+        [ip: addr]
+      _ -> []
+    end
+  end
+
+  defp udp_port() do
+    Application.fetch_env!(:live_browser, :udp_port)
+  end
 end

@@ -48,7 +48,7 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  host = System.get_env("RENDER_EXTERNAL_HOSTNAME") || System.get_env("PHX_HOST") || "example.com"
+  host = System.get_env("PHX_HOST") || "example.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
   config :live_browser, LiveBrowserWeb.Endpoint,
@@ -113,3 +113,14 @@ if config_env() == :prod do
   #
   # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
 end
+
+config :live_browser,
+  appid: 686810,
+  master_list_interval: 5, # minutes
+  tender_interval: 15, # seconds
+  limit: 10_000,
+  udp_port: 20850,
+  steam_api_key: System.get_env("STEAM_API_KEY")
+
+config :locus,
+  license_key: System.get_env("MAXMIND_LICENSE_KEY")

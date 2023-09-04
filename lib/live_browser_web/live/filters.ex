@@ -42,7 +42,7 @@ defmodule LiveBrowserWeb.Filters do
   end
 
   def handle_event("set_continents", %{"continents" => continents}, %{assigns: %{filters: filters}} = socket) do
-    filters = Keyword.put(filters, :continents, &(&1.location["continent"]["code"] in continents))
+    filters = Keyword.put(filters, :continents, &(&1.location !== :unknown && &1.location["continent"]["code"] in continents))
 
     send(self(), {:update_filters, filters})
 

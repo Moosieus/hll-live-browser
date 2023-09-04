@@ -6,8 +6,8 @@ import Config
 # which you should run after static files are built and
 # before starting your production server.
 config :live_browser, LiveBrowserWeb.Endpoint,
-  url: [host: System.get_env("RENDER_EXTERNAL_HOSTNAME") || "localhost", port: 80],
-  cache_static_manifest: "priv/static/cache_manifest.json"
+  cache_static_manifest: "priv/static/cache_manifest.json",
+  use_fly_ip: true
 
 config :locus,
   load_from: {:maxmind, "GeoLite2-City"}

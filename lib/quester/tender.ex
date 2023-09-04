@@ -14,8 +14,6 @@ defmodule Quester.Tender do
   @impl :gen_statem
   def callback_mode, do: :handle_event_function
 
-  @interval Application.compile_env!(:live_browser, :tender_interval)
-
   ## API
 
   @spec start_link(binary) :: :ignore | {:error, any} | {:ok, pid}
@@ -147,10 +145,10 @@ defmodule Quester.Tender do
 
   defp sleep(last_sent) do
     dt = Time.diff(Time.utc_now, last_sent)
-    if dt < @interval do
-      # Logger.debug("sleeping for #{@interval - dt} seconds", Logger.metadata())
+    if dt < interval() do
+      # Logger.debug("sleeping for #{interval() - dt} seconds", Logger.metadata())
 
-      Process.sleep((@interval - dt) * 1000)
+      Process.sleep((interval() - dt) * 1000)
     else
       Logger.debug("no rest for the wicked", Logger.metadata())
     end
@@ -164,5 +162,9 @@ defmodule Quester.Tender do
 
   defp address_to_ip_string({{part_i, part_ii, part_iii, part_iv}, _port}) do
     "#{part_i}.#{part_ii}.#{part_iii}.#{part_iv}"
+  end
+
+  defp interval() do
+    Application.fetch_env!(:live_browser, :tender_interval)
   end
 end

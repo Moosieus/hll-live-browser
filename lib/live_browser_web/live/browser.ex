@@ -196,12 +196,16 @@ defmodule LiveBrowserWeb.Browser do
     end
   end
 
-  def country_name(location) do
+  def country_name(:unknown), do: nil
+
+  def country_name(location) when is_map(location) do
     case location["country"]["names"]["en"] do
       nil -> "unavailable"
       name -> name
     end
   end
+
+  def region_name(:unknown), do: nil
 
   def region_name(location) do
     city = location["city"]["names"]["en"]

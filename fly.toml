@@ -1,0 +1,37 @@
+# fly.toml app configuration file generated for hll-live-browser on 2023-09-03T22:26:44-04:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "hll-live-browser"
+primary_region = "iad"
+kill_signal = "SIGTERM"
+swap_size_mb = 512
+
+[build]
+
+[deploy]
+  release_command = "/app/bin/migrate"
+
+[env]
+  PHX_HOST = "hll-live-browser.fly.dev"
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 1000
+    soft_limit = 1000
+
+[[services]]
+  internal_port = 20850
+  protocol = "udp"
+
+  [[services.ports]]
+    port = "20850"

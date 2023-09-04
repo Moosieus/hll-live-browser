@@ -8,16 +8,7 @@
 import Config
 
 config :live_browser,
-  ecto_repos: [LiveBrowser.Repo],
-  appid: 686810,
-  master_list_interval: 5, # minutes
-  tender_interval: 15, # seconds
-  limit: 10_000,
-  udp_port: 20850,
-  steam_api_key: System.get_env("STEAM_API_KEY")
-
-config :locus,
-  license_key: System.get_env("MAXMIND_LICENSE_KEY")
+  ecto_repos: [LiveBrowser.Repo]
 
 # Configures the endpoint
 config :live_browser, LiveBrowserWeb.Endpoint,
