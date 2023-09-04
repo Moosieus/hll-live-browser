@@ -92,8 +92,15 @@ defmodule Quester.Tender do
 
   ## Timeout
 
-  def handle_event(:state_timeout, :await_timeout, state, data) do
-    {:stop, {:timeout, {state, data}}} # stop and don't reset
+  def handle_event(:state_timeout, :await_timeout, state, {address, _} = data) do
+    Logger.info([tender_timeout: address, state: state, data: data])
+    {:stop, :normal}
+  end
+
+  # proof I should be using a map for state here
+  def handle_event(:state_timeout, :await_timeout, state, {address, _last_sent, _total, _parts} = data) do
+    Logger.info([tender_timeout: address, state: state, data: data])
+    {:stop, :normal}
   end
 
   defp recv_timeout() do
