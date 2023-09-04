@@ -6,7 +6,7 @@ defmodule LiveBrowserWeb.Browser do
       Phoenix.PubSub.subscribe(LiveBrowser.PubSub, "servers_info")
     end
 
-    filters = [min: &(&1.players >= 30), max: &(&1.players <= 85)]
+    filters = [min: &(&1.players >= 30), max: &(&1.players <= 90)]
     order = [{:players, :desc}]
 
     servers_info = GenServer.call(Quester.Cache, :servers_info)

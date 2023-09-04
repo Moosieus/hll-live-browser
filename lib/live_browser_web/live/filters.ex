@@ -10,7 +10,7 @@ defmodule LiveBrowserWeb.Filters do
     socket = socket
     |> assign(:continents, [])
     |> assign(:min, 30)
-    |> assign(:max, 85)
+    |> assign(:max, 90)
     |> assign(:range_valid, true)
 
     {:ok, socket}
