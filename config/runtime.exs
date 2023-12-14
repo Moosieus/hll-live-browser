@@ -115,9 +115,11 @@ if config_env() == :prod do
 end
 
 config :live_browser,
-  appid: 686810,
-  master_list_interval: 5, # minutes
-  tender_interval: 15, # seconds
+  appid: 686_810,
+  # minutes
+  master_list_interval: 5,
+  # seconds
+  tender_interval: 15,
   limit: 10_000,
   udp_port: 20850,
   steam_api_key: System.get_env("STEAM_API_KEY")

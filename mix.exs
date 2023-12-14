@@ -54,11 +54,15 @@ defmodule LiveBrowser.MixProject do
       {:plug_cowboy, "~> 2.5"},
       # project deps
       {:elixir_a2s, "~> 0.3.2"},
-      {:locus, "~> 2.3.6"}, # IP geolocation
+      # IP geolocation
+      {:locus, "~> 2.3.6"},
       {:ex_heroicons, "~> 2.0.0"},
-      {:bandit, "~> 1.0-pre"}, # better than Cowboy
-      {:bcrypt_elixir, "~> 3.0"}, # auth
-      {:ecto_psql_extras, "~> 0.6"}, # metrics!
+      # better than Cowboy
+      {:bandit, "~> 1.0-pre"},
+      # auth
+      {:bcrypt_elixir, "~> 3.0"},
+      # metrics!
+      {:ecto_psql_extras, "~> 0.6"}
     ]
   end
 

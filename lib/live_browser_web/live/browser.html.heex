@@ -1,5 +1,5 @@
 <div class="flex flex-row gap-x-4 mt-5">
-  <.live_component module={LiveBrowserWeb.Filters} id="filters" filters={@filters}/>
+  <.live_component module={LiveBrowserWeb.Filters} id="filters" filters={@filters} />
   <div class="grow">
     <table class="min-w-full divide-y divide-gray-300">
       <thead>
@@ -7,7 +7,11 @@
           <th class="text-lg py-3 text-left">
             <span class="align-middle">Server</span>
             <button phx-click="sort" phx-value-by="name">
-              <Heroicons.LiveView.icon name={order_arrow_direction(@order, :name)} type="outline" class="inline h-6 w-6" />
+              <Heroicons.LiveView.icon
+                name={order_arrow_direction(@order, :name)}
+                type="outline"
+                class="inline h-6 w-6"
+              />
             </button>
           </th>
           <th class="text-lg px-1 py-3 text-center whitespace-nowrap">
@@ -20,7 +24,11 @@
             <div class="flex justify-center">
               <span class="align-middle pl-2">Players</span>
               <button phx-click="sort" phx-value-by="players">
-                <Heroicons.LiveView.icon name={order_arrow_direction(@order, :players)} type="outline" class="inline h-6 w-6" />
+                <Heroicons.LiveView.icon
+                  name={order_arrow_direction(@order, :players)}
+                  type="outline"
+                  class="inline h-6 w-6"
+                />
               </button>
             </div>
           </th>
@@ -28,11 +36,19 @@
         </tr>
       </thead>
       <tbody id="servers_info" phx-update="stream" class="divide-y divide-gray-200 bg-white">
-        <tr :for={{dom_addr_id, {address, server}} <- @streams.servers_info} id={dom_addr_id} class="divide-x divide-gray-200">
+        <tr
+          :for={{dom_addr_id, {address, server}} <- @streams.servers_info}
+          id={dom_addr_id}
+          class="divide-x divide-gray-200"
+        >
           <td class="py-2">
             <div class="text-black">
               <span class="text-xl"><%= server.name %></span>
-              <a class="inline-block align-text-top text-blue-500 h-6 text-sm" href={"steam://connect/#{address}"} target="_blank">
+              <a
+                class="inline-block align-text-top text-blue-500 h-6 text-sm"
+                href={"steam://connect/#{address}"}
+                target="_blank"
+              >
                 [join]
               </a>
             </div>
@@ -45,7 +61,9 @@
             <%= region_name(server.location) %>
           </td>
           <td class="py-2 text-center"><%= server.players %>/<%= server.max_players %></td>
-          <td id={"#{dom_addr_id}-last_changed"} class="py-2 text-center" phx-hook="locale_time"><%= server.last_changed %></td>
+          <td id={"#{dom_addr_id}-last_changed"} class="py-2 text-center" phx-hook="locale_time">
+            <%= server.last_changed %>
+          </td>
         </tr>
       </tbody>
     </table>

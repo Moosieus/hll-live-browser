@@ -18,7 +18,17 @@ defmodule Quester.MasterList do
     Represents a single server entry from the master list query. Only retains the fields we care about.
     """
     defstruct [
-      :addr, :gameport, :name, :version, :players, :max_players, :map, :secure, :dedicated, :os, :gametype
+      :addr,
+      :gameport,
+      :name,
+      :version,
+      :players,
+      :max_players,
+      :map,
+      :secure,
+      :dedicated,
+      :os,
+      :gametype
     ]
   end
 
@@ -30,7 +40,7 @@ defmodule Quester.MasterList do
 
   @impl true
   @spec init(any) :: {:ok, {term, map}}
-  def init([name: _name, finch: finch]) do
+  def init(name: _name, finch: finch) do
     Logger.debug("initializing", Logger.metadata())
 
     Process.register(self(), __MODULE__)
@@ -47,7 +57,8 @@ defmodule Quester.MasterList do
 
     Enum.each(current, fn {address, _server} ->
       DynamicSupervisor.start_child(address)
-      Process.sleep(100) # bodge until I can figure out a way around {:error, :eagain} from the socket
+      # bodge until I can figure out a way around {:error, :eagain} from the socket
+      Process.sleep(100)
     end)
 
     Process.send_after(self(), :loop, query_interval())
@@ -64,7 +75,9 @@ defmodule Quester.MasterList do
 
     Enum.each(old, fn {address, _server} ->
       case current |> has_key?(address) do
-        true -> nil
+        true ->
+          nil
+
         false ->
           Logger.debug(["closing tender", address: address], Logger.metadata())
           Tender.stop(address, :normal)
@@ -73,7 +86,9 @@ defmodule Quester.MasterList do
 
     Enum.each(current, fn {address, _server} ->
       case old |> has_key?(address) do
-        true -> nil
+        true ->
+          nil
+
         false ->
           Logger.debug(["starting tender", address: address], Logger.metadata())
           DynamicSupervisor.start_child(address)
@@ -103,15 +118,21 @@ defmodule Quester.MasterList do
 
   @spec query_master_list(any()) :: {:ok, %{String => %Server{}}} | {:error, Exception.t()}
   defp query_master_list(finch) do
+    steam_api_key =
+      Application.fetch_env!(:live_browser, :steam_api_key) ||
+        raise "STEAM_API_KEY must be set in environment variables"
 
-    steam_api_key = Application.fetch_env!(:live_browser, :steam_api_key) || raise "STEAM_API_KEY must be set in environment variables"
-
-    request = Finch.build(
-      :get, "http://api.steampowered.com/IGameServersService/GetServerList/v1/?" <> URI.encode_query(
-        [key: steam_api_key, filter: "\\appid\\#{appid()}", limit: limit()]
-      ),
-      [{"Accept", "application/json"}]
-    )
+    request =
+      Finch.build(
+        :get,
+        "http://api.steampowered.com/IGameServersService/GetServerList/v1/?" <>
+          URI.encode_query(
+            key: steam_api_key,
+            filter: "\\appid\\#{appid()}",
+            limit: limit()
+          ),
+        [{"Accept", "application/json"}]
+      )
 
     with {:ok, %{status: 200, body: body}} <- Finch.request(request, finch),
          {:ok, servers} <- parse_server_list(body) do
@@ -134,8 +155,11 @@ defmodule Quester.MasterList do
     case Jason.decode(body, decode_opts) do
       {:ok, %{response: %{servers: servers}}} ->
         servers
+
       {:error, _} ->
-        %{response: %{servers: servers}} = Jason.decode!(String.replace_invalid(body), decode_opts)
+        %{response: %{servers: servers}} =
+          Jason.decode!(String.replace_invalid(body), decode_opts)
+
         servers
     end
   end
@@ -143,10 +167,11 @@ defmodule Quester.MasterList do
   def put_ip_address(server) do
     [ip, port] = String.split(server[:addr], ":")
 
-    ip = ip
-    |> String.split(".")
-    |> Enum.map(fn i -> String.to_integer(i) end)
-    |> List.to_tuple()
+    ip =
+      ip
+      |> String.split(".")
+      |> Enum.map(fn i -> String.to_integer(i) end)
+      |> List.to_tuple()
 
     port = String.to_integer(port)
 
@@ -154,6 +179,6 @@ defmodule Quester.MasterList do
   end
 
   defp key_by_address(servers) do
-    Enum.reduce(servers, %{}, fn (server, acc) -> Map.put(acc, server.addr, server) end)
+    Enum.reduce(servers, %{}, fn server, acc -> Map.put(acc, server.addr, server) end)
   end
 end

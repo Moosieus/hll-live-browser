@@ -8,7 +8,7 @@ defmodule Quester.UDP do
   ## API
 
   def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts, [name: __MODULE__])
+    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
   ## Callbacks
@@ -49,9 +49,11 @@ defmodule Quester.UDP do
   defp udp_socket_opts() do
     case Application.get_env(:live_browser, :use_fly_ip) do
       true ->
-        {:ok, addr} = :inet.getaddr('fly-global-services', :inet)
+        {:ok, addr} = :inet.getaddr(~c"fly-global-services", :inet)
         [ip: addr]
-      _ -> []
+
+      _ ->
+        []
     end
   end
 

@@ -18,7 +18,7 @@ defmodule Quester.Tender do
 
   @spec start_link(binary) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(address) do
-    :gen_statem.start_link(via_registry(address), __MODULE__, address, [timeout: 10 * 1000])
+    :gen_statem.start_link(via_registry(address), __MODULE__, address, timeout: 10 * 1000)
   end
 
   @spec stop({:inet.ip_address(), :inet.port_number()}, any) :: :ok
@@ -39,12 +39,12 @@ defmodule Quester.Tender do
 
   @impl :gen_statem
   def init(address) do
-    Logger.metadata([address: address])
+    Logger.metadata(address: address)
 
     # send self a message
 
     :ok = GenServer.call(Quester.UDP, {address, A2S.challenge_request(:info)})
-    {:ok, :await_challenge, {address, Time.utc_now}, recv_timeout()}
+    {:ok, :await_challenge, {address, Time.utc_now()}, recv_timeout()}
   end
 
   @impl :gen_statem
@@ -72,7 +72,8 @@ defmodule Quester.Tender do
         report_and_next(msg, data)
 
       {:multipacket, {header, _body} = part} ->
-        {:next_state, :await_multipacket, {address, last_sent, header.total, [part]}, recv_timeout()}
+        {:next_state, :await_multipacket, {address, last_sent, header.total, [part]},
+         recv_timeout()}
     end
   end
 
@@ -93,13 +94,18 @@ defmodule Quester.Tender do
   ## Timeout
 
   def handle_event(:state_timeout, :await_timeout, state, {address, _} = data) do
-    Logger.info([tender_timeout: address, state: state, data: data])
+    Logger.info(tender_timeout: address, state: state, data: data)
     {:stop, :normal}
   end
 
   # proof I should be using a map for state here
-  def handle_event(:state_timeout, :await_timeout, state, {address, _last_sent, _total, _parts} = data) do
-    Logger.info([tender_timeout: address, state: state, data: data])
+  def handle_event(
+        :state_timeout,
+        :await_timeout,
+        state,
+        {address, _last_sent, _total, _parts} = data
+      ) do
+    Logger.info(tender_timeout: address, state: state, data: data)
     {:stop, :normal}
   end
 
@@ -110,17 +116,20 @@ defmodule Quester.Tender do
   ## Functions
 
   defp report_and_next({:info, info}, {address, last_sent}) do
-    info = info
-    |> Map.from_struct()
-    |> Map.put(:address, address_to_string(address))
-    |> Map.put(:last_changed, Time.truncate(Time.utc_now(), :second))
+    info =
+      info
+      |> Map.from_struct()
+      |> Map.put(:address, address_to_string(address))
+      |> Map.put(:last_changed, Time.truncate(Time.utc_now(), :second))
 
     location =
       case :locus.lookup(:city, address_to_ip_string(address)) do
         {:ok, location} ->
           location
+
         :not_found ->
           :unknown
+
         {:error, _reason} ->
           # add a log here!
           :unknown
@@ -134,7 +143,7 @@ defmodule Quester.Tender do
 
     sleep(last_sent)
     :ok = GenServer.call(Quester.UDP, {address, A2S.challenge_request(:info)})
-    {:next_state, :await_challenge, {address, Time.utc_now}, recv_timeout()}
+    {:next_state, :await_challenge, {address, Time.utc_now()}, recv_timeout()}
   end
 
   defp changed?(info) do
@@ -144,14 +153,15 @@ defmodule Quester.Tender do
       # no previous entry
       old === nil -> true
       # significant field changed
-      (old.name !== info.name) or (old.map !== info.map) or (old.players !== info.players) -> true
+      old.name !== info.name or old.map !== info.map or old.players !== info.players -> true
       # no changes
       true -> false
     end
   end
 
   defp sleep(last_sent) do
-    dt = Time.diff(Time.utc_now, last_sent)
+    dt = Time.diff(Time.utc_now(), last_sent)
+
     if dt < interval() do
       # Logger.debug("sleeping for #{interval() - dt} seconds", Logger.metadata())
 
