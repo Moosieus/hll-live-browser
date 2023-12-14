@@ -9,7 +9,8 @@ defmodule LiveBrowser.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      compilers: [:yecc] ++ Mix.compilers()
     ]
   end
 
@@ -56,7 +57,6 @@ defmodule LiveBrowser.MixProject do
       {:locus, "~> 2.3.6"}, # IP geolocation
       {:ex_heroicons, "~> 2.0.0"},
       {:bandit, "~> 1.0-pre"}, # better than Cowboy
-      {:uni_recover, "~> 0.1.0"}, # Fix encoding errors in master list
       {:bcrypt_elixir, "~> 3.0"}, # auth
       {:ecto_psql_extras, "~> 0.6"}, # metrics!
     ]

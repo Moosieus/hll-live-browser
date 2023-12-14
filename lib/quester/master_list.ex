@@ -135,7 +135,7 @@ defmodule Quester.MasterList do
       {:ok, %{response: %{servers: servers}}} ->
         servers
       {:error, _} ->
-        %{response: %{servers: servers}} = Jason.decode!(UniRecover.sub(body), decode_opts)
+        %{response: %{servers: servers}} = Jason.decode!(String.replace_invalid(body), decode_opts)
         servers
     end
   end
