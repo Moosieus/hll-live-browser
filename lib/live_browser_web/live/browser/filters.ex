@@ -1,4 +1,4 @@
-defmodule LiveBrowserWeb.Filters do
+defmodule LiveBrowserWeb.Browser.Filters do
   use Phoenix.LiveComponent
 
   @moduledoc """

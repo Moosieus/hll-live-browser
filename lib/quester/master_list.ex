@@ -32,21 +32,23 @@ defmodule Quester.MasterList do
     ]
   end
 
-  ## API
+  ## Initialization
 
-  def start_link(default), do: GenServer.start_link(__MODULE__, default, [])
-
-  ## Callbacks
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, Keyword.get(opts, :finch), opts)
+  end
 
   @impl true
-  @spec init(any) :: {:ok, {term, map}}
-  def init(name: _name, finch: finch) do
+  @spec init(finch :: atom()) :: {:ok, {term, map}}
+  def init(finch) do
     Logger.debug("initializing", Logger.metadata())
 
     Process.register(self(), __MODULE__)
     send(self(), :loop)
     {:ok, {finch, %{}}}
   end
+
+  ## Callbacks
 
   # Query the master list, starting a tender for each game server found.
   @impl true
@@ -69,12 +71,10 @@ defmodule Quester.MasterList do
   def handle_info(:loop, {finch, old}) do
     Logger.debug("loop", Logger.metadata())
 
-    import Map, only: [has_key?: 2]
-
     {:ok, current} = query_master_list(finch)
 
     Enum.each(old, fn {address, _server} ->
-      case current |> has_key?(address) do
+      case Map.has_key?(current, address) do
         true ->
           nil
 
@@ -85,7 +85,7 @@ defmodule Quester.MasterList do
     end)
 
     Enum.each(current, fn {address, _server} ->
-      case old |> has_key?(address) do
+      case Map.has_key?(old, address) do
         true ->
           nil
 
@@ -100,34 +100,16 @@ defmodule Quester.MasterList do
     {:noreply, current}
   end
 
-  ## Configuration
-
-  defp appid() do
-    Application.fetch_env!(:live_browser, :appid)
-  end
-
-  defp query_interval() do
-    Application.fetch_env!(:live_browser, :master_list_interval) * 1000 * 60
-  end
-
-  defp limit() do
-    Application.fetch_env!(:live_browser, :limit)
-  end
-
   ## Query and parsing logic
 
   @spec query_master_list(any()) :: {:ok, %{String => %Server{}}} | {:error, Exception.t()}
   defp query_master_list(finch) do
-    steam_api_key =
-      Application.fetch_env!(:live_browser, :steam_api_key) ||
-        raise "STEAM_API_KEY must be set in environment variables"
-
     request =
       Finch.build(
         :get,
         "http://api.steampowered.com/IGameServersService/GetServerList/v1/?" <>
           URI.encode_query(
-            key: steam_api_key,
+            key: steam_api_key!(),
             filter: "\\appid\\#{appid()}",
             limit: limit()
           ),
@@ -158,7 +140,7 @@ defmodule Quester.MasterList do
 
       {:error, _} ->
         %{response: %{servers: servers}} =
-          Jason.decode!(String.replace_invalid(body), decode_opts)
+          Jason.decode!(Uni.replace_invalid(body), decode_opts)
 
         servers
     end
@@ -180,5 +162,23 @@ defmodule Quester.MasterList do
 
   defp key_by_address(servers) do
     Enum.reduce(servers, %{}, fn server, acc -> Map.put(acc, server.addr, server) end)
+  end
+
+  defp steam_api_key!() do
+    Application.fetch_env!(:live_browser, :steam_api_key) || raise "STEAM_API_KEY must be set in environment variables"
+  end
+
+  ## Configuration
+
+  defp appid() do
+    Application.fetch_env!(:live_browser, :appid)
+  end
+
+  defp query_interval() do
+    Application.fetch_env!(:live_browser, :master_list_interval) * 1000 * 60
+  end
+
+  defp limit() do
+    Application.fetch_env!(:live_browser, :limit)
   end
 end

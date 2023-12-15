@@ -1,0 +1,25 @@
+<tr class="divide-x divide-gray-200">
+  <td class="py-2">
+    <div class="text-black">
+      <span class="text-xl"><%= @server.name %></span>
+      <a
+        class="inline-block align-text-top text-blue-500 h-6 text-sm"
+        href={"steam://connect/#{@server.address}"}
+        target="_blank"
+      >
+        [join]
+      </a>
+    </div>
+    <div class="text-gray-500 px-1"><%= map_full_name(@server.map) %></div>
+  </td>
+  <td class="py-2 text-center">
+    <%= @server.country %>
+  </td>
+  <td class="py-2 text-center">
+    <%= @server.region %>
+  </td>
+  <td class="py-2 text-center"><%= @server.players %>/<%= @server.max_players %></td>
+  <td id={"#{@id}-last_changed"} class="py-2 text-center" phx-hook="locale_time">
+    <%= @server.last_changed %>
+  </td>
+</tr>

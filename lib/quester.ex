@@ -23,7 +23,7 @@ defmodule Quester do
       {Registry, keys: :unique, name: :quester_registry},
       {Quester.DynamicSupervisor, name: Quester.DynamicSupervisor},
       Quester.UDP,
-      {Quester.MasterList, [name: Quester.MasterList, finch: config.finch]},
+      {Quester.MasterList, finch: config.finch},
       Quester.Cache
     ]
 

@@ -14,17 +14,7 @@ defmodule Quester.Tender do
   @impl :gen_statem
   def callback_mode, do: :handle_event_function
 
-  ## API
-
-  @spec start_link(binary) :: :ignore | {:error, any} | {:ok, pid}
-  def start_link(address) do
-    :gen_statem.start_link(via_registry(address), __MODULE__, address, timeout: 10 * 1000)
-  end
-
-  @spec stop({:inet.ip_address(), :inet.port_number()}, any) :: :ok
-  def stop(address, reason) do
-    address |> via_registry |> GenServer.stop(reason)
-  end
+  ## Initialization
 
   @spec child_spec(init_args) :: Supervisor.child_spec()
   def child_spec(address) do
@@ -35,17 +25,26 @@ defmodule Quester.Tender do
     }
   end
 
-  ## Callbacks
+  @spec start_link(binary) :: :ignore | {:error, any} | {:ok, pid}
+  def start_link(address) do
+    :gen_statem.start_link(via_registry(address), __MODULE__, address, timeout: 10 * 1000)
+  end
 
   @impl :gen_statem
   def init(address) do
     Logger.metadata(address: address)
 
     # send self a message
-
     :ok = GenServer.call(Quester.UDP, {address, A2S.challenge_request(:info)})
     {:ok, :await_challenge, {address, Time.utc_now()}, recv_timeout()}
   end
+
+  @spec stop({:inet.ip_address(), :inet.port_number()}, any) :: :ok
+  def stop(address, reason) do
+    address |> via_registry |> GenServer.stop(reason)
+  end
+
+  ## Callbacks
 
   @impl :gen_statem
   def handle_event(:cast, packet, :await_challenge, {address, last_sent} = data) do
@@ -122,20 +121,10 @@ defmodule Quester.Tender do
       |> Map.put(:address, address_to_string(address))
       |> Map.put(:last_changed, Time.truncate(Time.utc_now(), :second))
 
-    location =
-      case :locus.lookup(:city, address_to_ip_string(address)) do
-        {:ok, location} ->
-          location
+    {country, region} = location(address)
 
-        :not_found ->
-          :unknown
-
-        {:error, _reason} ->
-          # add a log here!
-          :unknown
-      end
-
-    info = Map.put(info, :location, location)
+    info = Map.put(info, :country, country)
+    info = Map.put(info, :region, region)
 
     if changed?(info) do
       :ok = PubSub.broadcast(LiveBrowser.PubSub, "servers_info", {:update_info, info})
@@ -144,6 +133,38 @@ defmodule Quester.Tender do
     sleep(last_sent)
     :ok = GenServer.call(Quester.UDP, {address, A2S.challenge_request(:info)})
     {:next_state, :await_challenge, {address, Time.utc_now()}, recv_timeout()}
+  end
+
+  defp location(address) do
+    case :locus.lookup(:city, address_to_ip_string(address)) do
+      {:ok, location} ->
+        {country(location), region(location)}
+
+      _ ->
+        {:unknown, :unknown}
+    end
+  end
+
+  defp country(location) when is_map(location) do
+    case location["country"]["names"]["en"] do
+      nil -> "unavailable"
+      name -> name
+    end
+  end
+
+  defp region(location) when is_map(location) do
+    city = location["city"]["names"]["en"]
+
+    subdivision =
+      case location["subdivisions"] do
+        nil -> nil
+        [] -> nil
+        [first | _rest] -> first["iso_code"]
+      end
+
+    [city, subdivision]
+    |> Enum.filter(&(&1 !== nil))
+    |> Enum.join(", ")
   end
 
   defp changed?(info) do
@@ -162,12 +183,10 @@ defmodule Quester.Tender do
   defp sleep(last_sent) do
     dt = Time.diff(Time.utc_now(), last_sent)
 
-    if dt < interval() do
-      # Logger.debug("sleeping for #{interval() - dt} seconds", Logger.metadata())
+    interval = interval()
 
-      Process.sleep((interval() - dt) * 1000)
-    else
-      Logger.debug("no rest for the wicked", Logger.metadata())
+    if dt < interval do
+      Process.sleep((interval - dt) * 1000)
     end
   end
 
