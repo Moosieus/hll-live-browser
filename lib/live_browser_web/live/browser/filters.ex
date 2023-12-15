@@ -58,7 +58,7 @@ defmodule LiveBrowserWeb.Browser.Filters do
       Keyword.put(
         filters,
         :continents,
-        &(&1.location !== :unknown && &1.location["continent"]["code"] in continents)
+        &(&1.country_code !== :unknown && &1.country_code in continents)
       )
 
     send(self(), {:update_filters, filters})

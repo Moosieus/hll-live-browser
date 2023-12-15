@@ -9,6 +9,10 @@ defmodule Quester.Tender do
 
   @type init_args() :: {:inet.ip_address(), :inet.port_number()}
 
+  defmodule Data do
+    defstruct [:address, :last_sent, :total_parts, :parts]
+  end
+
   @behaviour :gen_statem
 
   @impl :gen_statem
@@ -36,7 +40,13 @@ defmodule Quester.Tender do
 
     # send self a message
     :ok = GenServer.call(Quester.UDP, {address, A2S.challenge_request(:info)})
-    {:ok, :await_challenge, {address, Time.utc_now()}, recv_timeout()}
+
+    data = %Data{
+      address: address,
+      last_sent: Time.utc_now()
+    }
+
+    {:ok, :await_challenge, data, recv_timeout()}
   end
 
   @spec stop({:inet.ip_address(), :inet.port_number()}, any) :: :ok
@@ -47,7 +57,11 @@ defmodule Quester.Tender do
   ## Callbacks
 
   @impl :gen_statem
-  def handle_event(:cast, packet, :await_challenge, {address, last_sent} = data) do
+  def handle_event(:cast, packet, :await_challenge, data) do
+    %Data{
+      address: address
+    } = data
+
     case A2S.parse_challenge(packet) do
       {:challenge, challenge} ->
         # Logger.debug("got challenge", Logger.metadata())
@@ -60,50 +74,59 @@ defmodule Quester.Tender do
 
       {:multipacket, part} ->
         # Logger.debug("got multipacket", Logger.metadata())
-        {:next_state, :await_multipacket, {address, last_sent, [part]}, recv_timeout()}
+        {:next_state, :await_multipacket, %Data{data | parts: [part]}, recv_timeout()}
     end
   end
 
   @impl :gen_statem
-  def handle_event(:cast, packet, :await_response, {address, last_sent} = data) do
+  def handle_event(:cast, packet, :await_response, data) do
+    %Data{
+      address: address,
+      last_sent: last_sent
+    } = data
+
     case A2S.parse_response(packet) do
       {:info, _info} = msg ->
         report_and_next(msg, data)
 
       {:multipacket, {header, _body} = part} ->
-        {:next_state, :await_multipacket, {address, last_sent, header.total, [part]},
-         recv_timeout()}
+        data = %Data{
+          address: address,
+          last_sent: last_sent,
+          total_parts: header.total,
+          parts: [part]
+        }
+
+        {:next_state, :await_multipacket, data, recv_timeout()}
     end
   end
 
   @impl :gen_statem
-  def handle_event(:cast, packet, :await_multipacket, {address, last_sent, total, parts}) do
+  def handle_event(:cast, packet, :await_multipacket, data) do
+    %Data{
+      total_parts: total_parts,
+      parts: parts
+    } = data
+
     {:multipacket, part} = A2S.parse_response(packet)
     parts = [part | parts]
 
-    if Enum.count(parts) === total do
+    if Enum.count(parts) === total_parts do
       parts
       |> A2S.parse_multipacket_response()
-      |> report_and_next({address, last_sent})
+      |> report_and_next(data)
     else
-      {:next_state, :await_multipacket, {address, last_sent, total, parts}, recv_timeout()}
+      {:next_state, :await_multipacket, %Data{data | parts: parts}, recv_timeout()}
     end
   end
 
   ## Timeout
 
-  def handle_event(:state_timeout, :await_timeout, state, {address, _} = data) do
-    Logger.info(tender_timeout: address, state: state, data: data)
-    {:stop, :normal}
-  end
+  def handle_event(:state_timeout, :await_timeout, state, data) do
+    %Data{
+      address: address
+    } = data
 
-  # proof I should be using a map for state here
-  def handle_event(
-        :state_timeout,
-        :await_timeout,
-        state,
-        {address, _last_sent, _total, _parts} = data
-      ) do
     Logger.info(tender_timeout: address, state: state, data: data)
     {:stop, :normal}
   end
@@ -114,17 +137,25 @@ defmodule Quester.Tender do
 
   ## Functions
 
-  defp report_and_next({:info, info}, {address, last_sent}) do
+  defp report_and_next({:info, info}, data) do
+    %Data{
+      address: address,
+      last_sent: last_sent
+    } = data
+
     info =
       info
       |> Map.from_struct()
       |> Map.put(:address, address_to_string(address))
       |> Map.put(:last_changed, Time.truncate(Time.utc_now(), :second))
 
-    {country, region} = location(address)
+    {country, country_code, region} = location(address)
 
-    info = Map.put(info, :country, country)
-    info = Map.put(info, :region, region)
+    info =
+      info
+      |> Map.put(:country, country)
+      |> Map.put(:country_code, country_code)
+      |> Map.put(:region, region)
 
     if changed?(info) do
       :ok = PubSub.broadcast(LiveBrowser.PubSub, "servers_info", {:update_info, info})
@@ -132,39 +163,13 @@ defmodule Quester.Tender do
 
     sleep(last_sent)
     :ok = GenServer.call(Quester.UDP, {address, A2S.challenge_request(:info)})
-    {:next_state, :await_challenge, {address, Time.utc_now()}, recv_timeout()}
-  end
 
-  defp location(address) do
-    case :locus.lookup(:city, address_to_ip_string(address)) do
-      {:ok, location} ->
-        {country(location), region(location)}
+    data = %Data{
+      address: address,
+      last_sent: Time.utc_now()
+    }
 
-      _ ->
-        {:unknown, :unknown}
-    end
-  end
-
-  defp country(location) when is_map(location) do
-    case location["country"]["names"]["en"] do
-      nil -> "unavailable"
-      name -> name
-    end
-  end
-
-  defp region(location) when is_map(location) do
-    city = location["city"]["names"]["en"]
-
-    subdivision =
-      case location["subdivisions"] do
-        nil -> nil
-        [] -> nil
-        [first | _rest] -> first["iso_code"]
-      end
-
-    [city, subdivision]
-    |> Enum.filter(&(&1 !== nil))
-    |> Enum.join(", ")
+    {:next_state, :await_challenge, data, recv_timeout()}
   end
 
   defp changed?(info) do
@@ -192,6 +197,12 @@ defmodule Quester.Tender do
 
   defp via_registry(address), do: {:via, Registry, {:quester_registry, address}}
 
+  defp interval() do
+    Application.fetch_env!(:live_browser, :tender_interval)
+  end
+
+  ## Data formatting
+
   defp address_to_string({{part_i, part_ii, part_iii, part_iv}, port}) do
     "#{part_i}.#{part_ii}.#{part_iii}.#{part_iv}:#{port}"
   end
@@ -200,7 +211,42 @@ defmodule Quester.Tender do
     "#{part_i}.#{part_ii}.#{part_iii}.#{part_iv}"
   end
 
-  defp interval() do
-    Application.fetch_env!(:live_browser, :tender_interval)
+  # destructure location data here as :locus returns an outsized amount of data
+  defp location(address) do
+    case :locus.lookup(:city, address_to_ip_string(address)) do
+      {:ok, location} ->
+        {country(location), continent_code(location), region(location)}
+
+      _ ->
+        {:unknown, :unknown}
+    end
+  end
+
+  defp country(location) when is_map(location) do
+    case location["country"]["names"]["en"] do
+      nil -> "unavailable"
+      name -> name
+    end
+  end
+
+  defp region(location) when is_map(location) do
+    city = location["city"]["names"]["en"]
+
+    subdivision =
+      case location["subdivisions"] do
+        [first | _rest] -> first["iso_code"]
+        _ -> nil
+      end
+
+    [city, subdivision]
+    |> Enum.filter(&(&1 !== nil))
+    |> Enum.join(", ")
+  end
+
+  defp continent_code(location) when is_map(location) do
+    case location["continent"]["code"] do
+      nil -> :unknown
+      code -> code
+    end
   end
 end
