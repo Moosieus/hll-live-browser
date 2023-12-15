@@ -7,6 +7,8 @@ defmodule Quester.Cache do
 
   alias Phoenix.PubSub
 
+  ## Initialization
+
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, [])
   end
@@ -20,6 +22,22 @@ defmodule Quester.Cache do
 
     {:ok, []}
   end
+
+  ## API
+
+  def get_servers(timeout \\ 5000) do
+    GenServer.call(__MODULE__, :servers_info, timeout)
+  end
+
+  def get_server(address, timeout \\ 5000) do
+    GenServer.call(__MODULE__, {:get_info, address}, timeout)
+  end
+
+  def update_server(server, timeout \\ 5000) do
+    GenServer.call(__MODULE__, {:update_info, server}, timeout)
+  end
+
+  ## Callbacks
 
   @impl true
   def handle_info({:update_info, info}, servers) do

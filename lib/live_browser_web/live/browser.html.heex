@@ -37,8 +37,8 @@
       </thead>
       <tbody id="servers_info" phx-update="replace" class="divide-y divide-gray-200 bg-white">
         <.live_component
-          module={LiveBrowserWeb.Server}
           :for={{address, server} <- @servers_info}
+          module={LiveBrowserWeb.Server}
           id={address}
           server={server}
         />

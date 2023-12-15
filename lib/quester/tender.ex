@@ -168,7 +168,7 @@ defmodule Quester.Tender do
   end
 
   defp changed?(info) do
-    old = GenServer.call(Quester.Cache, {:get_info, info.address})
+    old = Quester.Cache.get_server(info.address)
 
     cond do
       # no previous entry

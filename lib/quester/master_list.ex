@@ -165,7 +165,8 @@ defmodule Quester.MasterList do
   end
 
   defp steam_api_key!() do
-    Application.fetch_env!(:live_browser, :steam_api_key) || raise "STEAM_API_KEY must be set in environment variables"
+    Application.fetch_env!(:live_browser, :steam_api_key) ||
+      raise "STEAM_API_KEY must be set in environment variables"
   end
 
   ## Configuration

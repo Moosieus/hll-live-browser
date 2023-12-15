@@ -11,7 +11,7 @@ defmodule LiveBrowserWeb.Browser do
     order = [{:players, :desc}]
 
     servers_info =
-      GenServer.call(Quester.Cache, :servers_info)
+      Quester.Cache.get_servers()
       |> apply_user_settings(filters, order)
 
     socket =
@@ -47,7 +47,7 @@ defmodule LiveBrowserWeb.Browser do
   # update filters
   def handle_info({:update_filters, filters}, %{assigns: %{order: order}} = socket) do
     servers_info =
-      GenServer.call(Quester.Cache, :servers_info)
+      Quester.Cache.get_servers()
       |> apply_user_settings(filters, order)
 
     socket =
@@ -82,7 +82,11 @@ defmodule LiveBrowserWeb.Browser do
   end
 
   # toggle sort
-  def handle_event("sort", %{"by" => field_str}, %{assigns: %{order: order, filters: filters, servers_info: servers_info}} = socket) do
+  def handle_event(
+        "sort",
+        %{"by" => field_str},
+        %{assigns: %{order: order, filters: filters, servers_info: servers_info}} = socket
+      ) do
     field = String.to_atom(field_str)
 
     direction =
