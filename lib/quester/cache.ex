@@ -33,20 +33,18 @@ defmodule Quester.Cache do
     GenServer.call(__MODULE__, {:get_info, address}, timeout)
   end
 
-  def update_server(server, timeout \\ 5000) do
-    GenServer.call(__MODULE__, {:update_info, server}, timeout)
-  end
-
   ## Callbacks
 
   @impl true
   def handle_info({:update_info, info}, servers) do
-    # {:noreply, Map.put(servers, info.address, info)}
-    servers =
-      servers
-      |> List.keystore(info.address, 0, {info.address, info})
+    servers = List.keystore(servers, info.address, 0, {info.address, info})
 
     {:noreply, servers}
+  end
+
+  @impl true
+  def handle_info({:info_timeout, address}, servers) do
+    {:noreply, List.keydelete(servers, address, 0)}
   end
 
   @impl true

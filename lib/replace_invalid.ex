@@ -1,4 +1,8 @@
 defmodule Uni do
+  @moduledoc """
+  Copypasta'd out of Elixir 1.16.0-rc1 b/c I need this function to sanitize Valve's master list.
+  """
+
   defguardp replace_invalid_ii_of_iii(i, ii)
             when Bitwise.bor(Bitwise.bsl(i, 6), ii) in 32..863 or
                    Bitwise.bor(Bitwise.bsl(i, 6), ii) in 896..1023

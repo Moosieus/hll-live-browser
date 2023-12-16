@@ -120,14 +120,15 @@ defmodule Quester.Tender do
     end
   end
 
-  ## Timeout
+  ## Timeouts
 
-  def handle_event(:state_timeout, :await_timeout, state, data) do
-    %Data{
-      address: address
-    } = data
+  def handle_event(:state_timeout, :await_timeout, state, %Data{} = data) do
+    address = address_to_string(data.address)
+
+    :ok = PubSub.broadcast(LiveBrowser.PubSub, "servers_info", {:info_timeout, address})
 
     Logger.info(tender_timeout: address, state: state, data: data)
+
     {:stop, :normal}
   end
 

@@ -44,8 +44,23 @@ defmodule LiveBrowserWeb.Browser do
     end
   end
 
+  def handle_info({:info_timeout, address}, socket) do
+    %{
+      assigns: %{servers_info: server_list}
+    } = socket
+
+    server_list = List.keydelete(server_list, address, 0)
+
+    socket = assign(socket, :servers_info, server_list)
+    {:noreply, socket}
+  end
+
   # update filters
-  def handle_info({:update_filters, filters}, %{assigns: %{order: order}} = socket) do
+  def handle_info({:update_filters, filters}, socket) do
+    %{
+      assigns: %{order: order}
+    } = socket
+
     servers_info =
       Quester.Cache.get_servers()
       |> apply_user_settings(filters, order)
