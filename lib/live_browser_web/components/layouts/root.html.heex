@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="[scrollbar-gutter:stable]">
+<html lang="en" class="dark" class="[scrollbar-gutter:stable]">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8,10 +8,22 @@
       <%= assigns[:page_title] || "LiveBrowser" %>
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
-    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}></script>
+
+    <%# https://tailwindcss.com/docs/dark-mode#supporting-system-preference-and-manual-selection %>
+    <script>
+      function toggle_theme() {
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark')
+        } else {
+          document.documentElement.classList.remove('dark')
+        }
+      }
+      toggle_theme()
     </script>
   </head>
-  <body class="bg-white antialiased">
+  <%#  %>
+  <body class="bg-zinc-50 dark:bg-slate-900 dark:text-zinc-100 antialiased">
     <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
       <%= if @current_user do %>
         <li class="text-[0.8125rem] leading-6 text-zinc-900">

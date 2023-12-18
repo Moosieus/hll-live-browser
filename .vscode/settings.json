@@ -7,5 +7,10 @@
     "tailwindCSS.includeLanguages": {
         "elixir": "html",
         "phoenix-heex": "html"
-    }
+    },
+    "tailwind-fold.supportedLanguages": [
+        "html",
+        "phoenix-heex",
+        "elixir",
+    ]
 }

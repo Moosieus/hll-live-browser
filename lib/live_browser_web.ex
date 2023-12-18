@@ -86,6 +86,7 @@ defmodule LiveBrowserWeb do
       # Core UI components and translation
       import LiveBrowserWeb.CoreComponents
       import LiveBrowserWeb.Gettext
+      import LiveBrowserWeb.ThemeToggle
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

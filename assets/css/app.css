@@ -4,3 +4,23 @@
 
 /* This file is for your main application CSS */
 @import "./iosevka-live-browser.css";
+
+#theme_toggles button {
+    & .active {
+        display: none;
+    }
+
+    & .inactive {
+        display: inline-flex;
+    }
+}
+
+#theme_toggles button[data-active='true'] {
+    & .active {
+        display: inline-flex;
+    }
+
+    & .inactive {
+        display: none;
+    }
+}

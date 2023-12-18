@@ -121,7 +121,7 @@ config :live_browser,
   # seconds
   tender_interval: 15,
   limit: 10_000,
-  udp_port: 20850,
+  udp_port: 20852,
   steam_api_key: System.get_env("STEAM_API_KEY")
 
 config :locus,

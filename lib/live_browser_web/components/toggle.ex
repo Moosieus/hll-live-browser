@@ -28,7 +28,7 @@ defmodule LiveBrowserWeb.Toggle do
         </span>
       </button>
       <span class="ml-3 text-sm">
-        <span class="font-medium text-gray-900"><%= @label %></span>
+        <span class="font-medium text-gray-900 dark:text-gray-100"><%= @label %></span>
       </span>
     </div>
     """

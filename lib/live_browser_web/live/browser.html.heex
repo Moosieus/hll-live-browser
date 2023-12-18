@@ -1,9 +1,9 @@
 <div class="flex flex-row gap-x-4 mt-5">
   <.live_component module={LiveBrowserWeb.Browser.Filters} id="filters" filters={@filters} />
   <div class="grow">
-    <table class="min-w-full divide-y divide-gray-300">
+    <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
       <thead>
-        <tr class="h-14 divide-x divide-gray-200">
+        <tr class="h-14 divide-x divide-gray-200 dark:divide-gray-700">
           <th class="text-lg py-3 text-left">
             <span class="align-middle">Server</span>
             <button phx-click="sort" phx-value-by="name">
@@ -35,7 +35,7 @@
           <th class="text-lg px-1 py-3 text-center whitespace-nowrap">Last Changed</th>
         </tr>
       </thead>
-      <tbody id="servers_info" phx-update="replace" class="divide-y divide-gray-200 bg-white">
+      <tbody id="servers_info" phx-update="replace" class="divide-y divide-gray-200 dark:divide-gray-700">
         <.live_component
           :for={{address, server} <- @servers_info}
           module={LiveBrowserWeb.Server}
