@@ -51,14 +51,13 @@ defmodule LiveBrowser.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.4"},
-      {:plug_cowboy, "~> 2.5"},
       # project deps
       {:elixir_a2s, "~> 0.3.2"},
       # IP geolocation
       {:locus, "~> 2.3.6"},
       {:ex_heroicons, "~> 2.0.0"},
       # better than Cowboy
-      {:bandit, "~> 1.0-pre"},
+      {:bandit, "~> 1.0"},
       # auth
       {:bcrypt_elixir, "~> 3.0"},
       # metrics!
