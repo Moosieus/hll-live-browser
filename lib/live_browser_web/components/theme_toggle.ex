@@ -5,7 +5,7 @@ defmodule LiveBrowserWeb.ThemeToggle do
     ~H"""
     <%# Explicit Light %>
     <span id="theme_toggles" phx-update="ignore" class="isolate inline-flex shadow-sm">
-      <button id="toggle_light" type="button" data-active="false" class="relative inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 hover:bg-gray-50 focus:z-10">
+      <button id="toggle_light" type="button" data-active="false" class="relative inline-flex items-center px-3 py-2 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:z-10">
 
         <%# active/solid %>
         <svg class="active w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -19,7 +19,7 @@ defmodule LiveBrowserWeb.ThemeToggle do
       </button>
 
       <%# System %>
-      <button id="toggle_system" type="button" data-active="false" class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 hover:bg-gray-50 focus:z-10">
+      <button id="toggle_system" type="button" data-active="false" class="relative -ml-px inline-flex items-center px-3 py-2 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:z-10">
 
         <%# active/solid %>
         <svg class="active w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -33,7 +33,7 @@ defmodule LiveBrowserWeb.ThemeToggle do
       </button>
 
       <%# Explicit Dark %>
-      <button id="toggle_dark" type="button" data-active="false" class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 hover:bg-gray-50 focus:z-10">
+      <button id="toggle_dark" type="button" data-active="false" class="relative -ml-px inline-flex items-center px-3 py-2 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:z-10">
 
         <%# active/solid %>
         <svg class="active w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">

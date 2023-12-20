@@ -15,6 +15,16 @@
     }
 }
 
+#theme_toggles button:hover {
+    & .active {
+        display: inline-flex;
+    }
+
+    & .inactive {
+        display: none;
+    }
+}
+
 #theme_toggles button[data-active='true'] {
     & .active {
         display: inline-flex;

@@ -1,6 +1,6 @@
 # Generated from: https://typeof.net/Iosevka/customizer
-# need to add: `webfont-formats = [ "woff2" ]`
-# and replace: `url('/woff2/` with `url('/fonts/`
+# run with: npm run build -- webfont::iosevka-live-browser
+# and replace: `url('woff2/` with `url('/fonts/`
 
 [buildPlans.iosevka-live-browser]
 family = "Iosevka - LiveBrowser"
@@ -9,7 +9,7 @@ serifs = "sans"
 no-cv-ss = true
 export-glyph-names = false
 no-ligation = true
-webfont-formats = [ "woff2" ]
+webfont-formats = [ "woff2" ] # need to add this
 
   [buildPlans.iosevka-live-browser.variants]
   inherits = "ss15"
