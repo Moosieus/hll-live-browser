@@ -12,7 +12,7 @@ defmodule LiveBrowserWeb.Browser.Filters do
       |> assign(:min, 30)
       |> assign(:max, 90)
       |> assign(:range_valid, true)
-      |> assign(:exclude_night, "on")
+      |> assign(:exclude_night, false) # not assigned by default.
 
     {:ok, socket}
   end
@@ -39,11 +39,7 @@ defmodule LiveBrowserWeb.Browser.Filters do
         {:noreply, socket}
 
       false ->
-        socket =
-          socket
-          |> assign(:range_valid, false)
-
-        {:noreply, socket}
+        {:noreply, assign(socket, :range_valid, false)}
     end
   end
 
@@ -55,6 +51,7 @@ defmodule LiveBrowserWeb.Browser.Filters do
     filters = Keyword.put(filters, :continents, filter_fn)
 
     send(self(), {:update_filters, filters})
+
     {:noreply, assign(socket, :continents, continents)}
   end
 
@@ -64,6 +61,7 @@ defmodule LiveBrowserWeb.Browser.Filters do
     filters = Keyword.delete(filters, :continents)
 
     send(self(), {:update_filters, filters})
+
     {:noreply, assign(socket, :continents, [])}
   end
 
@@ -73,7 +71,8 @@ defmodule LiveBrowserWeb.Browser.Filters do
     filters = Keyword.put(filters, :exclude_night, &(!String.ends_with?(&1.map, "_N")))
 
     send(self(), {:update_filters, filters})
-    {:noreply, assign(socket, :exclude_night, "on")}
+
+    {:noreply, assign(socket, :exclude_night, true)}
   end
 
   def handle_event("set_night", _params, socket) do
@@ -82,6 +81,7 @@ defmodule LiveBrowserWeb.Browser.Filters do
     filters = Keyword.delete(filters, :exclude_night)
 
     send(self(), {:update_filters, filters})
+
     {:noreply, assign(socket, :exclude_night, false)}
   end
 
