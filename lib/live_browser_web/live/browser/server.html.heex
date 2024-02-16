@@ -2,17 +2,10 @@
   <td class="py-2">
     <div>
       <span class="text-xl dark:text-slate-100"><%= @server.name %></span>
-      <%# Developers broke something and these links no longer work
-        <a
-          class="inline-block align-text-top text-blue-500 h-6 text-sm"
-          href={"steam://connect/#{@server.address}"}
-          target="_blank"
-        >
-        [join]
-      </a>
-      %>
     </div>
-    <div class="text-gray-500 dark:text-zinc-400 dark:font-semibold px-1"><%= map_full_name(@server.map) %></div>
+    <div class="text-gray-500 dark:text-zinc-400 dark:font-semibold px-1">
+      <%= map_full_name(@server.map) %>
+    </div>
   </td>
   <td class="py-2 text-center">
     <%= @server.country %>

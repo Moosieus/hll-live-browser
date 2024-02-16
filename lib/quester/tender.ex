@@ -147,8 +147,9 @@ defmodule Quester.Tender do
     info =
       info
       |> Map.from_struct()
+      |> Map.put(:name, String.trim_trailing(info.name))
       |> Map.put(:address, address_to_string(address))
-      |> Map.put(:last_changed, Time.truncate(Time.utc_now(), :second))
+      |> Map.put(:last_changed, DateTime.utc_now(:second))
 
     {country, country_code, region} = location(address)
 

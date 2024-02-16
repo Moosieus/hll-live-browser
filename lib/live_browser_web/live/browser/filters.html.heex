@@ -55,7 +55,12 @@
       </label>
       <form phx-change="set_night" phx-target={@myself}>
         <div class="flex items-center">
-          <input type="checkbox" name="exclude_night" class="bg-transparent" checked={@exclude_night}>
+          <input
+            type="checkbox"
+            name="exclude_night"
+            class="bg-transparent"
+            checked={@exclude_night}
+          />
           <span class="ml-2">Exclude Night Maps</span>
         </div>
       </form>

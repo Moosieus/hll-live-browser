@@ -120,6 +120,8 @@ config :live_browser,
   master_list_interval: 5,
   # seconds
   tender_interval: 15,
+  # seconds
+  persistence_interval: 60,
   limit: 10_000,
   udp_port: 20852,
   steam_api_key: System.get_env("STEAM_API_KEY")

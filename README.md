@@ -19,6 +19,7 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
   * Source: https://github.com/phoenixframework/phoenix
 
 ## Todo
+- Update `:last_changed` to be used as a `DateTime` instead of `Time`
 - Add proper validation on min/max input
 - Investigate rendering w/ assigns + LiveComponents
 - Add "No results" message

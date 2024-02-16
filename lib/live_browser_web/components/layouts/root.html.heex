@@ -8,9 +8,9 @@
       <%= assigns[:page_title] || "LiveBrowser" %>
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
-    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}></script>
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
+    </script>
 
-    <%# https://tailwindcss.com/docs/dark-mode#supporting-system-preference-and-manual-selection %>
     <script>
       function toggle_theme() {
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -22,7 +22,6 @@
       toggle_theme()
     </script>
   </head>
-  <%#  %>
   <body class="bg-zinc-50 text-gray-900 dark:bg-slate-900 dark:text-gray-100 antialiased">
     <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
       <%= if @current_user do %>

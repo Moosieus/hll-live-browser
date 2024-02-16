@@ -35,7 +35,11 @@
           <th class="text-lg px-1 py-3 text-center whitespace-nowrap">Last Changed</th>
         </tr>
       </thead>
-      <tbody id="servers_info" phx-update="replace" class="divide-y divide-gray-200 dark:divide-gray-800">
+      <tbody
+        id="servers_info"
+        phx-update="replace"
+        class="divide-y divide-gray-200 dark:divide-gray-800"
+      >
         <.live_component
           :for={{address, server} <- @servers_info}
           module={LiveBrowserWeb.Server}

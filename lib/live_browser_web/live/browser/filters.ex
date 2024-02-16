@@ -12,7 +12,8 @@ defmodule LiveBrowserWeb.Browser.Filters do
       |> assign(:min, 30)
       |> assign(:max, 90)
       |> assign(:range_valid, true)
-      |> assign(:exclude_night, false) # not assigned by default.
+      # not assigned by default.
+      |> assign(:exclude_night, false)
 
     {:ok, socket}
   end
