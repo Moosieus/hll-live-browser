@@ -15,6 +15,6 @@
   </td>
   <td class="py-2 text-center"><%= @server.players %>/<%= @server.max_players %></td>
   <td id={"#{@id}-last_changed"} class="py-2 text-center" phx-hook="locale_time">
-    <%= @server.last_changed %>
+    <%= DateTime.to_time(@server.last_changed) %>
   </td>
 </tr>
