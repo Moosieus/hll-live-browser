@@ -1,0 +1,7 @@
+- [ ] Decode the "GS" string
+- [ ] Use new region fields instead of MaxMind
+- [ ] Hide "private" servers
+- [ ] Filter for Offensive and Warfare servers
+- [ ] Filter official servers
+- [ ] track server stats
+- [ ] Add a stats page for each server

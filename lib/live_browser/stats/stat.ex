@@ -1,6 +1,6 @@
 defmodule LiveBrowser.Stats.Stat do
   @moduledoc """
-  Timescale database table for logging server metrics.
+  Table for logging server metrics.
   """
   use Ecto.Schema
   import Ecto.Changeset

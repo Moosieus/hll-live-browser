@@ -1,7 +1,7 @@
 <div class="min-w-fit">
   <div class="h-14 text-lg py-3 text-left font-bold border-b-[1px] border-gray-300 dark:border-gray-600">
     <span>Filters</span>
-    <Heroicons.LiveView.icon name="adjustments-horizontal" type="outline" class="inline h-6 w-6" />
+    <.icon name="hero-adjustments-horizontal-outline" class="inline h-6 w-6" />
   </div>
   <div class="py-3">
     <div>
@@ -20,7 +20,7 @@
           value={@min}
           phx-debounce="300"
         />
-        <Heroicons.LiveView.icon name="minus" type="outline" class="inline h-6 w-6" />
+        <.icon name="hero-minus-outline" class="inline h-6 w-6" />
         <input
           type="text"
           class={"bg-transparent text-center w-12 block border-0 px-0 py-1.5 shadow-sm ring-1 ring-inset #{if @range_valid do "ring-gray-300 dark:ring-gray-700" else "ring-red-600" end} placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"}
@@ -45,7 +45,7 @@
             checked={iso_code in @continents}
             class="bg-transparent"
           />
-          <span class="ml-2"><%= name %></span>
+          <span class="ml-2">{name}</span>
         </div>
       </form>
     </div>

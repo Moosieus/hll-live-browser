@@ -5,6 +5,8 @@ defmodule LiveBrowserWeb.Browser.Filters do
   """
   use Phoenix.LiveComponent
 
+  import LiveBrowserWeb.CoreComponents
+
   def mount(socket) do
     socket =
       socket

@@ -123,8 +123,8 @@ config :live_browser,
   # seconds
   persistence_interval: 60,
   limit: 10_000,
-  udp_port: 20852,
-  steam_api_key: System.get_env("STEAM_API_KEY")
+  udp_port: System.fetch_env!("A2S_QUERY_PORT") |> String.to_integer(),
+  steam_api_key: System.fetch_env!("STEAM_API_KEY")
 
 config :locus,
-  license_key: System.get_env("MAXMIND_LICENSE_KEY")
+  license_key: System.fetch_env!("MAXMIND_LICENSE_KEY")

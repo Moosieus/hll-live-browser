@@ -7,11 +7,7 @@
           <th class="text-lg py-3 text-left">
             <span class="align-middle">Server</span>
             <button phx-click="sort" phx-value-by="name">
-              <Heroicons.LiveView.icon
-                name={order_arrow_direction(@order, :name)}
-                type="outline"
-                class="inline h-6 w-6"
-              />
+              <.icon name={order_arrow_direction(@order, :name)} class="inline h-6 w-6" />
             </button>
           </th>
           <th class="text-lg px-1 py-3 text-center whitespace-nowrap">
@@ -24,11 +20,7 @@
             <div class="flex justify-center">
               <span class="align-middle pl-2">Players</span>
               <button phx-click="sort" phx-value-by="players">
-                <Heroicons.LiveView.icon
-                  name={order_arrow_direction(@order, :players)}
-                  type="outline"
-                  class="inline h-6 w-6"
-                />
+                <.icon name={order_arrow_direction(@order, :players)} class="inline h-6 w-6" />
               </button>
             </div>
           </th>

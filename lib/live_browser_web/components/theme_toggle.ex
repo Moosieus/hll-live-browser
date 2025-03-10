@@ -10,7 +10,6 @@ defmodule LiveBrowserWeb.ThemeToggle do
         data-active="false"
         class="relative inline-flex items-center px-3 py-2 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:z-10"
       >
-        
         <svg
           class="active w-5 h-5"
           xmlns="http://www.w3.org/2000/svg"
@@ -42,7 +41,6 @@ defmodule LiveBrowserWeb.ThemeToggle do
         data-active="false"
         class="relative -ml-px inline-flex items-center px-3 py-2 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:z-10"
       >
-        
         <svg
           class="active w-5 h-5"
           xmlns="http://www.w3.org/2000/svg"
@@ -78,7 +76,6 @@ defmodule LiveBrowserWeb.ThemeToggle do
         data-active="false"
         class="relative -ml-px inline-flex items-center px-3 py-2 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:z-10"
       >
-        
         <svg
           class="active w-5 h-5"
           xmlns="http://www.w3.org/2000/svg"

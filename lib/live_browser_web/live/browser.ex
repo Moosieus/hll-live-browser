@@ -2,6 +2,8 @@ defmodule LiveBrowserWeb.Browser do
   require Logger
   use LiveBrowserWeb, :live_view
 
+  import LiveBrowserWeb.CoreComponents
+
   def mount(_params, _session, socket) do
     if connected?(socket) do
       Phoenix.PubSub.subscribe(LiveBrowser.PubSub, "servers_info")
@@ -184,9 +186,9 @@ defmodule LiveBrowserWeb.Browser do
 
   defp order_arrow_direction(order_opts, key) do
     case Keyword.get(order_opts, key) do
-      :asc -> "arrow-long-up"
-      :desc -> "arrow-long-down"
-      _ -> "arrows-up-down"
+      :asc -> "hero-arrow-long-up"
+      :desc -> "hero-arrow-long-down"
+      _ -> "hero-arrows-up-down"
     end
   end
 end

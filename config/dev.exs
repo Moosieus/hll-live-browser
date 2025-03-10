@@ -31,7 +31,8 @@ config :live_browser, LiveBrowserWeb.Endpoint,
 
 # NOTE: Fresh dev setups need to run locus manually at least once.
 config :locus,
-  load_from: "/Users/cameronduley/Library/Caches/locus_erlang/GeoLite2-City.mmdb.gz"
+  # load_from: "/Users/moosieus/Library/Caches/locus_erlang/GeoLite2-City.mmdb.gz"
+  load_from: {:maxmind, "GeoLite2-City"}
 
 # ## SSL Support
 #
