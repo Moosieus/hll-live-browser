@@ -13,7 +13,7 @@ defmodule LiveBrowserWeb.Browser do
     order = [{:players, :desc}]
 
     servers_info =
-      Quester.Cache.get_servers()
+      LiveBrowser.Quester.Cache.get_servers()
       |> apply_user_settings(filters, order)
 
     socket =
@@ -64,7 +64,7 @@ defmodule LiveBrowserWeb.Browser do
     } = socket
 
     servers_info =
-      Quester.Cache.get_servers()
+      LiveBrowser.Quester.Cache.get_servers()
       |> apply_user_settings(filters, order)
 
     socket =

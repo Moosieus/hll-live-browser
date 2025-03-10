@@ -39,7 +39,7 @@ defmodule LiveBrowser.Quester.Tender do
     Logger.metadata(address: address)
 
     # send self a message
-    :ok = GenServer.call(Quester.UDP, {address, A2S.challenge_request(:info)})
+    :ok = GenServer.call(LiveBrowser.Quester.UDP, {address, A2S.challenge_request(:info)})
 
     data = %Data{
       address: address,
@@ -65,7 +65,9 @@ defmodule LiveBrowser.Quester.Tender do
     case A2S.parse_challenge(packet) do
       {:challenge, challenge} ->
         # Logger.debug("got challenge", Logger.metadata())
-        :ok = GenServer.call(Quester.UDP, {address, A2S.sign_challenge(:info, challenge)})
+        :ok =
+          GenServer.call(LiveBrowser.Quester.UDP, {address, A2S.sign_challenge(:info, challenge)})
+
         {:next_state, :await_response, data, recv_timeout()}
 
       {:immediate, msg} ->
@@ -144,27 +146,14 @@ defmodule LiveBrowser.Quester.Tender do
       last_sent: last_sent
     } = data
 
-    info =
-      info
-      |> Map.from_struct()
-      |> Map.put(:name, String.trim_trailing(info.name))
-      |> Map.put(:address, address_to_string(address))
-      |> Map.put(:last_changed, DateTime.utc_now(:second))
-
-    {country, country_code, region} = location(address)
-
-    info =
-      info
-      |> Map.put(:country, country)
-      |> Map.put(:country_code, country_code)
-      |> Map.put(:region, region)
+    info = LiveBrowser.Quester.Enrichment.enrich(info, address)
 
     if changed?(info) do
       :ok = PubSub.broadcast(LiveBrowser.PubSub, "servers_info", {:update_info, info})
     end
 
     sleep(last_sent)
-    :ok = GenServer.call(Quester.UDP, {address, A2S.challenge_request(:info)})
+    :ok = GenServer.call(LiveBrowser.Quester.UDP, {address, A2S.challenge_request(:info)})
 
     data = %Data{
       address: address,
@@ -207,48 +196,5 @@ defmodule LiveBrowser.Quester.Tender do
 
   defp address_to_string({{part_i, part_ii, part_iii, part_iv}, port}) do
     "#{part_i}.#{part_ii}.#{part_iii}.#{part_iv}:#{port}"
-  end
-
-  defp address_to_ip_string({{part_i, part_ii, part_iii, part_iv}, _port}) do
-    "#{part_i}.#{part_ii}.#{part_iii}.#{part_iv}"
-  end
-
-  # destructure location data here as :locus returns an outsized amount of data
-  defp location(address) do
-    case :locus.lookup(:city, address_to_ip_string(address)) do
-      {:ok, location} ->
-        {country(location), continent_code(location), region(location)}
-
-      _ ->
-        {:unknown, :unknown}
-    end
-  end
-
-  defp country(location) when is_map(location) do
-    case location["country"]["names"]["en"] do
-      nil -> "unavailable"
-      name -> name
-    end
-  end
-
-  defp region(location) when is_map(location) do
-    city = location["city"]["names"]["en"]
-
-    subdivision =
-      case location["subdivisions"] do
-        [first | _rest] -> first["iso_code"]
-        _ -> nil
-      end
-
-    [city, subdivision]
-    |> Enum.filter(&(&1 !== nil))
-    |> Enum.join(", ")
-  end
-
-  defp continent_code(location) when is_map(location) do
-    case location["continent"]["code"] do
-      nil -> :unknown
-      code -> code
-    end
   end
 end

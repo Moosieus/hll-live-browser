@@ -16,7 +16,7 @@ defmodule LiveBrowser.Quester.DynamicSupervisor do
 
   @spec start_child(any) :: :ignore | {:error, any} | {:ok, pid} | {:ok, pid, any}
   def start_child(address) do
-    DynamicSupervisor.start_child(__MODULE__, Quester.Tender.child_spec(address))
+    DynamicSupervisor.start_child(__MODULE__, LiveBrowser.Quester.Tender.child_spec(address))
   end
 
   ## Callbacks

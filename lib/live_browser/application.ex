@@ -16,13 +16,13 @@ defmodule LiveBrowser.Application do
       {Phoenix.PubSub, name: LiveBrowser.PubSub},
       # Start Finch
       {Finch, name: LiveBrowser.Finch},
-      {Finch, name: Quester.Finch},
+      {Finch, name: LiveBrowser.Quester.Finch},
       # Start the Endpoint (http/https)
       LiveBrowserWeb.Endpoint,
       # Start a worker by calling: LiveBrowser.Worker.start_link(arg)
       # {LiveBrowser.Worker, arg}
       :locus.loader_child_spec(:city, ip_geo_database()),
-      {Quester, [finch: Quester.Finch, udp_port: 20850]}
+      {LiveBrowser.Quester, [finch: LiveBrowser.Quester.Finch, udp_port: 20850]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

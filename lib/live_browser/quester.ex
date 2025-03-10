@@ -25,10 +25,10 @@ defmodule LiveBrowser.Quester do
   def init(config) do
     children = [
       {Registry, keys: :unique, name: :quester_registry},
-      {Quester.DynamicSupervisor, name: Quester.DynamicSupervisor},
-      Quester.UDP,
-      {Quester.MasterList, finch: config.finch},
-      Quester.Cache
+      {LiveBrowser.Quester.DynamicSupervisor, name: LiveBrowser.Quester.DynamicSupervisor},
+      LiveBrowser.Quester.UDP,
+      {LiveBrowser.Quester.MasterList, finch: config.finch},
+      LiveBrowser.Quester.Cache
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

@@ -8,8 +8,8 @@ defmodule LiveBrowser.Quester.MasterList do
   """
   use GenServer
 
-  alias Quester.Tender
-  alias Quester.DynamicSupervisor
+  alias LiveBrowser.Quester.Tender
+  alias LiveBrowser.Quester.DynamicSupervisor
 
   require Logger
 
