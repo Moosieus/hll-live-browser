@@ -1,4 +1,4 @@
-defmodule Quester.UDP do
+defmodule LiveBrowser.Quester.UDP do
   @moduledoc """
   GenServer wrapper over `:gen_udp`, responsible for sending packets to game-servers and routing received packets to the appropriate `A2S.Statem` process.
   """

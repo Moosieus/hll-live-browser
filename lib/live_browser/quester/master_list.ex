@@ -1,4 +1,4 @@
-defmodule Quester.MasterList do
+defmodule LiveBrowser.Quester.MasterList do
   @moduledoc """
   Queries Steam's master server list to discover what servers exist, and spin up Tenders under TendorVisor accordingly.
 

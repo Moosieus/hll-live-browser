@@ -1,4 +1,4 @@
-defmodule Quester.DynamicSupervisor do
+defmodule LiveBrowser.Quester.DynamicSupervisor do
   @moduledoc """
   Singleton dynamic supervisor for server tenders.
   """

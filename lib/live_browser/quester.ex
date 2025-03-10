@@ -1,4 +1,4 @@
-defmodule Quester do
+defmodule LiveBrowser.Quester do
   @moduledoc """
   A service context module (working name) for querying data from A2S game servers
   and publishing the data via the `"servers_info"` PubSub channel, and via `Quester.Cache`.

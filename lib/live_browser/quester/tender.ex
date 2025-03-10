@@ -1,4 +1,4 @@
-defmodule Quester.Tender do
+defmodule LiveBrowser.Quester.Tender do
   @moduledoc """
   Queries a server over A2S every N seconds. For the time being each tender will just store the latest reply and return it on call()
   """
@@ -175,7 +175,7 @@ defmodule Quester.Tender do
   end
 
   defp changed?(info) do
-    old = Quester.Cache.get_server(info.address)
+    old = LiveBrowser.Quester.Cache.get_server(info.address)
 
     cond do
       # no previous entry
