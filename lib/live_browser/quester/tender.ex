@@ -7,6 +7,9 @@ defmodule LiveBrowser.Quester.Tender do
 
   alias Phoenix.PubSub
 
+  alias LiveBrowser.Browser
+  alias LiveBrowser.Browser.Server
+
   @type init_args() :: {:inet.ip_address(), :inet.port_number()}
 
   defmodule Data do
@@ -146,11 +149,9 @@ defmodule LiveBrowser.Quester.Tender do
       last_sent: last_sent
     } = data
 
-    info = LiveBrowser.Quester.Enrichment.enrich(info, address)
+    server = Server.new(info, address)
 
-    if changed?(info) do
-      :ok = PubSub.broadcast(LiveBrowser.PubSub, "servers_info", {:update_info, info})
-    end
+    Browser.maybe_broadcast_server(server)
 
     sleep(last_sent)
     :ok = GenServer.call(LiveBrowser.Quester.UDP, {address, A2S.challenge_request(:info)})
@@ -161,19 +162,6 @@ defmodule LiveBrowser.Quester.Tender do
     }
 
     {:next_state, :await_challenge, data, recv_timeout()}
-  end
-
-  defp changed?(info) do
-    old = LiveBrowser.Quester.Cache.get_server(info.address)
-
-    cond do
-      # no previous entry
-      old === nil -> true
-      # significant field changed
-      old.name !== info.name or old.map !== info.map or old.players !== info.players -> true
-      # no changes
-      true -> false
-    end
   end
 
   defp sleep(last_sent) do

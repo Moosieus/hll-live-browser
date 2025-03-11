@@ -1,6 +1,6 @@
-defmodule LiveBrowser.Quester.Cache do
+defmodule LiveBrowser.Browser.Cache do
   @moduledoc """
-  Quester.Cache subscribes to `LiveBrowser.PubSub, "servers"` and stores all results in a map.
+  Browser.Cache subscribes to `LiveBrowser.PubSub, "servers"` and stores all results in a map.
   This way when live views may render the last known good data upon mounting.
   """
   use GenServer

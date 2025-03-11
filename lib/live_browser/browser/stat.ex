@@ -1,4 +1,4 @@
-defmodule LiveBrowser.Stats.Stat do
+defmodule LiveBrowser.Browser.Stat do
   @moduledoc """
   Table for logging server metrics.
   """

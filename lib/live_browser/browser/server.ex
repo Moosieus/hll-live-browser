@@ -1,9 +1,37 @@
-defmodule LiveBrowser.Quester.Enrichment do
+defmodule LiveBrowser.Browser.Server do
   @moduledoc """
-  Contains functions used to enrich the A2S responses from HLL servers.
+  Represents the result of an A2S Query to a HLL server, with some additional
+  data enrichment.
   """
+  use Ecto.Schema
 
-  def enrich(%A2S.Info{} = info, address) do
+  # import Ecto.Changeset
+
+  schema "server" do
+    field :name, :string
+    field :address, :string
+    field :country, :string
+    field :county_code, :string
+    field :region, :string
+    field :gamemode, Ecto.Enum, values: [:warfare, :offensive, :skirmish, :unknown]
+    field :build_version, :integer
+    field :a2s_players, :integer
+    field :max_players, :integer
+    field :official?, :boolean
+    field :curr_vip, :integer
+    field :max_queue, :integer
+    field :crossplay?, :boolean
+    field :offensive_attacker, :string
+    field :a2s_map, :string
+    field :gs_map, :string
+    field :time_of_day, Ecto.Enum, values: [:dawn, :day, :dusk, :night, :unknown]
+    field :weather, Ecto.Enum, values: [:clear, :overcast, :rain, :snow, :unknown]
+    field :keywords, {:array, :string}
+    field :last_changed, :utc_datetime
+    field :gameport, :integer
+  end
+
+  def new(%A2S.Info{} = info, address) do
     {country, country_code, region} = location(address)
 
     info =
@@ -15,9 +43,16 @@ defmodule LiveBrowser.Quester.Enrichment do
       |> Map.put(:country, country)
       |> Map.put(:country_code, country_code)
       |> Map.put(:region, region)
+      |> Map.put(:a2s_players, info.players)
+      |> Map.put(:a2s_map, info.map)
+      |> Map.delete(:players)
+      |> Map.delete(:map)
 
     game_state = parse_game_state(info.keywords)
-    Map.merge(info, game_state)
+
+    data = Map.merge(info, game_state)
+
+    struct(__MODULE__, data)
   end
 
   defp address_to_string({{part_i, part_ii, part_iii, part_iv}, port}) do
@@ -67,11 +102,10 @@ defmodule LiveBrowser.Quester.Enrichment do
     end
   end
 
-  def parse_game_state(keywords) when is_binary(keywords) do
-    "GS:" <> game_state_b64 =
-      keywords
-      |> String.split(",")
-      |> Enum.find(&String.starts_with?(&1, "GS:"))
+  defp parse_game_state(keywords) when is_binary(keywords) do
+    keywords = String.split(keywords, ",")
+
+    "GS:" <> game_state_b64 = Enum.find(keywords, &String.starts_with?(&1, "GS:"))
 
     game_state_bin = Base.decode64!(game_state_b64)
 
@@ -96,7 +130,7 @@ defmodule LiveBrowser.Quester.Enrichment do
       map::8,
       time_of_day::8,
       weather::8,
-      time_remaining::binary
+      _::binary
     >> = game_state_bin
 
     gamemode = parse_gamemode(gamemode)
@@ -118,12 +152,10 @@ defmodule LiveBrowser.Quester.Enrichment do
       gs_map: parse_map(map),
       time_of_day: parse_time_of_day(time_of_day),
       weather: parse_weather(weather),
-      time_remaining: time_remaining,
-      game_state_bin: game_state_bin
+      keywords: keywords
     }
   end
 
-  @type gamemode :: :warfare | :offensive | :skirmish | :unknown
   defp parse_gamemode(2), do: :warfare
   defp parse_gamemode(3), do: :offensive
   defp parse_gamemode(7), do: :skirmish
@@ -135,13 +167,13 @@ defmodule LiveBrowser.Quester.Enrichment do
   defp parse_offensive_attacker(3), do: "GB"
   defp parse_offensive_attacker(4), do: "DAK"
   defp parse_offensive_attacker(5), do: "B8A"
-  defp parse_offensive_attacker(_), do: "N/A"
+  defp parse_offensive_attacker(_), do: "Unknown"
 
-  defp parse_weather(1), do: "Clear"
-  defp parse_weather(2), do: "Overcast"
-  defp parse_weather(3), do: "Rain"
-  defp parse_weather(4), do: "Snow"
-  defp parse_weather(_), do: "N/A"
+  defp parse_weather(1), do: :clear
+  defp parse_weather(2), do: :overcast
+  defp parse_weather(3), do: :rain
+  defp parse_weather(4), do: :snow
+  defp parse_weather(_), do: :unknown
 
   defp parse_map(1), do: "Foy"
   defp parse_map(2), do: "St Marie du Mont"
@@ -160,11 +192,25 @@ defmodule LiveBrowser.Quester.Enrichment do
   defp parse_map(15), do: "Driel"
   defp parse_map(16), do: "Mortain"
   defp parse_map(17), do: "Elsenborn"
-  defp parse_map(_), do: "N/A"
+  defp parse_map(_), do: "Unknown"
 
-  def parse_time_of_day(1), do: "Day"
-  def parse_time_of_day(2), do: "Night"
-  def parse_time_of_day(3), do: "Dusk"
-  def parse_time_of_day(5), do: "Dawn"
-  def parse_time_of_day(_), do: "N/A"
+  def parse_time_of_day(1), do: :day
+  def parse_time_of_day(2), do: :night
+  def parse_time_of_day(3), do: :dusk
+  def parse_time_of_day(5), do: :dawn
+  def parse_time_of_day(_), do: :unknown
+
+  # Adding this for backwards compatability, I'll need to change it later.
+
+  def fetch(%__MODULE__{} = term, key) do
+    term |> Map.from_struct() |> Map.fetch(key)
+  end
+
+  def get_and_update(%__MODULE__{} = data, key, function) do
+    data |> Map.from_struct() |> Map.get_and_update(key, function)
+  end
+
+  def pop(data, key) do
+    data |> Map.from_struct() |> Map.pop(key)
+  end
 end

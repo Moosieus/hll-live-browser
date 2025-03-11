@@ -13,7 +13,7 @@
   <td class="py-2 text-center">
     {@server.region}
   </td>
-  <td class="py-2 text-center">{@server.players}/{@server.max_players}</td>
+  <td class="py-2 text-center">{@server.a2s_players}/{@server.max_players}</td>
   <td id={"#{@id}-last_changed"} class="py-2 text-center" phx-hook="locale_time">
     {DateTime.to_time(@server.last_changed)}
   </td>

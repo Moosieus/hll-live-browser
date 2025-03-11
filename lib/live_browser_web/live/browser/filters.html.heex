@@ -32,9 +32,39 @@
         />
       </form>
     </div>
+
     <div class="pt-3">
       <label class="block text-sm font-medium leading-6">
-        Continent
+        Open Slots
+      </label>
+      <form class="mt-1" phx-change="set_range" phx-target={@myself}>
+        <input
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          class={"bg-transparent text-center w-16 block border-0 px-0 ml-0 py-1.5 shadow-sm ring-1 ring-inset #{if @range_valid do "ring-gray-300 dark:ring-gray-700" else "ring-red-600" end} placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"}
+          min="0"
+          max="100"
+          name="foo"
+          value={@min}
+          phx-debounce="300"
+        />
+      </form>
+      <div class="flex items-center mt-1">
+        <input
+          type="checkbox"
+          name="game_mode"
+          value="offensive"
+          class="bg-transparent"
+          checked={@exclude_night}
+        />
+        <span class="ml-2">w/ queue</span>
+      </div>
+    </div>
+
+    <div class="pt-3">
+      <label class="block text-sm font-medium leading-6">
+        Region
       </label>
       <form phx-change="set_continents" phx-target={@myself}>
         <div :for={{iso_code, name} <- continent_codes()} class="flex items-center">

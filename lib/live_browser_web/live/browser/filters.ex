@@ -34,8 +34,8 @@ defmodule LiveBrowserWeb.Browser.Filters do
 
         filters =
           filters
-          |> Keyword.put(:min, &(&1.players >= min))
-          |> Keyword.put(:max, &(&1.players <= max))
+          |> Keyword.put(:min, &(&1.a2s_players >= min))
+          |> Keyword.put(:max, &(&1.a2s_players <= max))
 
         send(self(), {:update_filters, filters})
 

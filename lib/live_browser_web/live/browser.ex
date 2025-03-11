@@ -4,17 +4,20 @@ defmodule LiveBrowserWeb.Browser do
 
   import LiveBrowserWeb.CoreComponents
 
+  alias LiveBrowser.Browser.Cache
+
   def mount(_params, _session, socket) do
     if connected?(socket) do
       Phoenix.PubSub.subscribe(LiveBrowser.PubSub, "servers_info")
     end
 
-    filters = [min: &(&1.players >= 30), max: &(&1.players <= 90)]
+    filters = [min: &(&1.a2s_players >= 30), max: &(&1.a2s_players <= 90)]
     order = [{:players, :desc}]
 
     servers_info =
-      LiveBrowser.Quester.Cache.get_servers()
+      Cache.get_servers()
       |> apply_user_settings(filters, order)
+      |> IO.inspect(label: "servers_info")
 
     socket =
       socket
@@ -64,7 +67,7 @@ defmodule LiveBrowserWeb.Browser do
     } = socket
 
     servers_info =
-      LiveBrowser.Quester.Cache.get_servers()
+      Cache.get_servers()
       |> apply_user_settings(filters, order)
 
     socket =

@@ -1,7 +1,7 @@
 defmodule LiveBrowser.Quester do
   @moduledoc """
   A service context module (working name) for querying data from A2S game servers
-  and publishing the data via the `"servers_info"` PubSub channel, and via `Quester.Cache`.
+  and publishing the data via the `"servers_info"` PubSub channel, and via `Browser.Cache`.
   """
   use Supervisor
 
@@ -28,7 +28,7 @@ defmodule LiveBrowser.Quester do
       {LiveBrowser.Quester.DynamicSupervisor, name: LiveBrowser.Quester.DynamicSupervisor},
       LiveBrowser.Quester.UDP,
       {LiveBrowser.Quester.MasterList, finch: config.finch},
-      LiveBrowser.Quester.Cache
+      LiveBrowser.Browser.Cache
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
