@@ -144,11 +144,11 @@ defmodule LiveBrowser.Quester.Enrichment do
   defp parse_weather(_), do: "N/A"
 
   defp parse_map(1), do: "Foy"
-  defp parse_map(2), do: "St Marie du Mont (SMDM)"
+  defp parse_map(2), do: "St Marie du Mont"
   defp parse_map(3), do: "Hurtgen"
   defp parse_map(4), do: "Utah Beach"
   defp parse_map(5), do: "Omaha Beach"
-  defp parse_map(6), do: "St Mere Eglise (SME)"
+  defp parse_map(6), do: "Sainte-Mère-Église"
   defp parse_map(7), do: "Purple Heart Lane"
   defp parse_map(8), do: "Hill 400"
   defp parse_map(9), do: "Carentan"
@@ -160,7 +160,7 @@ defmodule LiveBrowser.Quester.Enrichment do
   defp parse_map(15), do: "Driel"
   defp parse_map(16), do: "Mortain"
   defp parse_map(17), do: "Elsenborn"
-  defp parse_map(_), do: "Unknown Map"
+  defp parse_map(_), do: "N/A"
 
   def parse_time_of_day(1), do: "Day"
   def parse_time_of_day(2), do: "Night"
