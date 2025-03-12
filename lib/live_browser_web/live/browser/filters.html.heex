@@ -3,215 +3,66 @@
     <span>Filters</span>
     <.icon name="hero-adjustments-horizontal-outline" class="inline h-6 w-6" />
   </div>
-  <div class="py-3">
+  <.form
+    for={@form}
+    id="search_filter_form"
+    phx-target={@myself}
+    phx-change="validate"
+    class="grid grid-cols-1 gap-3 py-3"
+    phx-no-format
+  >
     <div>
-      <label class="block text-sm font-medium leading-6">
+      <label class="block text-sm font-medium leading-6 mb-1">
         Min - Max Players
       </label>
-      <form class="flex items-center mt-1" phx-change="set_range" phx-target={@myself}>
-        <input
+      <div class="flex gap-1 items-center">
+        <.input
           type="text"
           inputmode="numeric"
           pattern="[0-9]*"
-          class={"bg-transparent text-center w-12 block border-0 px-0 py-1.5 shadow-sm ring-1 ring-inset #{if @range_valid do "ring-gray-300 dark:ring-gray-700" else "ring-red-600" end} placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"}
           min="0"
           max="100"
-          name="min"
-          value={@min}
+          field={@form[:min_players]}
+          class="w-12 text-center"
           phx-debounce="300"
         />
+
         <.icon name="hero-minus" class="inline h-6 w-6" />
-        <input
+
+        <.input
           type="text"
-          class={"bg-transparent text-center w-12 block border-0 px-0 py-1.5 shadow-sm ring-1 ring-inset #{if @range_valid do "ring-gray-300 dark:ring-gray-700" else "ring-red-600" end} placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"}
+          inputmode="numeric"
+          pattern="[0-9]*"
           min="1"
           max="100"
-          name="max"
-          value={@max}
+          field={@form[:max_players]}
+          class="w-12 text-center"
           phx-debounce="300"
         />
-      </form>
-    </div>
-
-    <div class="pt-3">
-      <label class="block text-sm font-medium leading-6">
-        Open Slots
-      </label>
-      <form class="mt-1" phx-change="set_range" phx-target={@myself}>
-        <input
-          type="text"
-          inputmode="numeric"
-          pattern="[0-9]*"
-          class={"bg-transparent text-center w-16 block border-0 px-0 ml-0 py-1.5 shadow-sm ring-1 ring-inset #{if @range_valid do "ring-gray-300 dark:ring-gray-700" else "ring-red-600" end} placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"}
-          min="0"
-          max="100"
-          name="foo"
-          value={@min}
-          phx-debounce="300"
-        />
-      </form>
-      <div class="flex items-center mt-1">
-        <input
-          type="checkbox"
-          name="game_mode"
-          value="offensive"
-          class="bg-transparent"
-          checked={@exclude_night}
-        />
-        <span class="ml-2">w/ queue</span>
       </div>
     </div>
 
-    <div class="pt-3">
-      <label class="block text-sm font-medium leading-6">
-        Region
-      </label>
-      <form phx-change="set_continents" phx-target={@myself}>
-        <div :for={{iso_code, name} <- continent_codes()} class="flex items-center">
-          <input
-            type="checkbox"
-            name="continents[]"
-            value={iso_code}
-            checked={iso_code in @continents}
-            class="bg-transparent"
-          />
-          <span class="ml-2">{name}</span>
-        </div>
-      </form>
+    <div>
+      <.input
+        type="text"
+        field={@form[:open_slots]}
+        inputmode="numeric"
+        pattern="[0-9]*"
+        min="0"
+        max="100"
+        class="w-16 text-center"
+        label="Open Slots"
+        show_error_msg?={false}
+      />
+
+      <div class="mt-1">
+        <.input type="checkbox" field={@form[:with_queue?]} label="With Queue" />
+      </div>
     </div>
 
-    <div class="pt-3">
-      <label class="block text-sm font-medium leading-6">
-        Game Mode
-      </label>
-      <form phx-change="set_night" phx-target={@myself}>
-        <div class="flex items-center">
-          <input
-            type="checkbox"
-            name="game_mode"
-            value="warfare"
-            class="bg-transparent"
-            checked={@exclude_night}
-          />
-          <span class="ml-2">Warfare</span>
-        </div>
-        <div class="flex items-center">
-          <input
-            type="checkbox"
-            name="game_mode"
-            value="offensive"
-            class="bg-transparent"
-            checked={@exclude_night}
-          />
-          <span class="ml-2">Offensive</span>
-        </div>
-        <div class="flex items-center">
-          <input
-            type="checkbox"
-            name="game_mode"
-            value="skirmmish"
-            class="bg-transparent"
-            checked={@exclude_night}
-          />
-          <span class="ml-2">Skirmish</span>
-        </div>
-      </form>
-    </div>
-
-    <div class="pt-3">
-      <label class="block text-sm font-medium leading-6">
-        Time of day
-      </label>
-      <form phx-change="set_night" phx-target={@myself}>
-        <div class="flex items-center">
-          <input
-            type="checkbox"
-            name="time_of_day"
-            value="day"
-            class="bg-transparent"
-            checked={@exclude_night}
-          />
-          <span class="ml-2">Dawn</span>
-        </div>
-        <div class="flex items-center">
-          <input
-            type="checkbox"
-            name="time_of_day"
-            value="night"
-            class="bg-transparent"
-            checked={@exclude_night}
-          />
-          <span class="ml-2">Day</span>
-        </div>
-        <div class="flex items-center">
-          <input
-            type="checkbox"
-            name="time_of_day"
-            value="dusk"
-            class="bg-transparent"
-            checked={@exclude_night}
-          />
-          <span class="ml-2">Dusk</span>
-        </div>
-        <div class="flex items-center">
-          <input
-            type="checkbox"
-            name="time_of_day"
-            value="night"
-            class="bg-transparent"
-            checked={@exclude_night}
-          />
-          <span class="ml-2">Night</span>
-        </div>
-      </form>
-    </div>
-
-    <div class="pt-3">
-      <label class="block text-sm font-medium leading-6">
-        Weather
-      </label>
-      <form phx-change="set_night" phx-target={@myself}>
-        <div class="flex items-center">
-          <input
-            type="checkbox"
-            name="weather"
-            value="clear"
-            class="bg-transparent"
-            checked={@exclude_night}
-          />
-          <span class="ml-2">Clear</span>
-        </div>
-        <div class="flex items-center">
-          <input
-            type="checkbox"
-            name="weather"
-            value="night"
-            class="bg-transparent"
-            checked={@exclude_night}
-          />
-          <span class="ml-2">Overcast</span>
-        </div>
-        <div class="flex items-center">
-          <input
-            type="checkbox"
-            name="weather"
-            value="rain"
-            class="bg-transparent"
-            checked={@exclude_night}
-          />
-          <span class="ml-2">Rain</span>
-        </div>
-        <div class="flex items-center">
-          <input
-            type="checkbox"
-            name="weather"
-            value="snow"
-            class="bg-transparent"
-            checked={@exclude_night}
-          />
-          <span class="ml-2">Snow</span>
-        </div>
-      </form>
-    </div>
-  </div>
+    <.checkgroup field={@form[:regions]} label="Region" options={FilterSet.region_options()} />
+    <.checkgroup field={@form[:gamemode]} label="Game Mode" options={Server.gamemode_options()} />
+    <.checkgroup field={@form[:time_of_day]} label="Time of day" options={Server.time_of_day_options()} />
+    <.checkgroup field={@form[:weather]} label="Weather" options={Server.weather_options()} />
+  </.form>
 </div>

@@ -136,7 +136,7 @@ defmodule LiveBrowser.Browser.Server do
     gamemode = parse_gamemode(gamemode)
 
     offensive_attacker =
-      if gamemode == :offensive, do: parse_offensive_attacker(offensive_attacker)
+      if gamemode == :Offensive, do: parse_offensive_attacker(offensive_attacker)
 
     %{
       gamemode: gamemode,
@@ -156,10 +156,18 @@ defmodule LiveBrowser.Browser.Server do
     }
   end
 
-  defp parse_gamemode(2), do: :warfare
-  defp parse_gamemode(3), do: :offensive
-  defp parse_gamemode(7), do: :skirmish
-  defp parse_gamemode(_), do: :unknown
+  # Gamemode
+
+  defp parse_gamemode(2), do: :Warfare
+  defp parse_gamemode(3), do: :Offensive
+  defp parse_gamemode(7), do: :Skirmish
+  defp parse_gamemode(_), do: :Unknown
+
+  @gamemode_options [{"Warfare", :Warfare}, {"Offensive", :Offensive}, {"Skirmish", :Skirmish}]
+  @gamemode_values Enum.map(@gamemode_options, fn {_text, val} -> val end)
+
+  def gamemode_options, do: @gamemode_options
+  def gamemode_values, do: @gamemode_values
 
   defp parse_offensive_attacker(0), do: "GER"
   defp parse_offensive_attacker(1), do: "US"
@@ -169,11 +177,21 @@ defmodule LiveBrowser.Browser.Server do
   defp parse_offensive_attacker(5), do: "B8A"
   defp parse_offensive_attacker(_), do: "Unknown"
 
-  defp parse_weather(1), do: :clear
-  defp parse_weather(2), do: :overcast
-  defp parse_weather(3), do: :rain
-  defp parse_weather(4), do: :snow
-  defp parse_weather(_), do: :unknown
+  # Weather
+
+  defp parse_weather(1), do: :Clear
+  defp parse_weather(2), do: :Overcast
+  defp parse_weather(3), do: :Rain
+  defp parse_weather(4), do: :Snow
+  defp parse_weather(_), do: :Unknown
+
+  @weather_options [{"Clear", :Clear}, {"Overcast", :Overcast}, {"Rain", :Rain}, {"Snow", :Snow}]
+  @weather_values Enum.map(@weather_options, fn {_text, val} -> val end)
+
+  def weather_options, do: @weather_options
+  def weather_values, do: @weather_values
+
+  # Map
 
   defp parse_map(1), do: "Foy"
   defp parse_map(2), do: "St Marie du Mont"
@@ -194,11 +212,19 @@ defmodule LiveBrowser.Browser.Server do
   defp parse_map(17), do: "Elsenborn"
   defp parse_map(_), do: "Unknown"
 
-  def parse_time_of_day(1), do: :day
-  def parse_time_of_day(2), do: :night
-  def parse_time_of_day(3), do: :dusk
-  def parse_time_of_day(5), do: :dawn
-  def parse_time_of_day(_), do: :unknown
+  # Time of day
+
+  def parse_time_of_day(1), do: :Day
+  def parse_time_of_day(2), do: :Night
+  def parse_time_of_day(3), do: :Dusk
+  def parse_time_of_day(5), do: :Dawn
+  def parse_time_of_day(_), do: :Unknown
+
+  @time_of_day_options [{"Dawn", :Dawn}, {"Day", :Day}, {"Dusk", :Dusk}, {"Night", :Night}]
+  @time_of_day_values Enum.map(@time_of_day_options, fn {_text, val} -> val end)
+
+  def time_of_day_options, do: @time_of_day_options
+  def time_of_day_values, do: @time_of_day_values
 
   # Adding this for backwards compatability, I'll need to change it later.
 

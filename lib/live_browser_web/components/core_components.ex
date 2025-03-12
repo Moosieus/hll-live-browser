@@ -265,6 +265,7 @@ defmodule LiveBrowserWeb.CoreComponents do
   attr :name, :any
   attr :label, :string, default: nil
   attr :value, :any
+  attr :class, :string, default: nil
 
   attr :type, :string,
     default: "text",
@@ -275,6 +276,7 @@ defmodule LiveBrowserWeb.CoreComponents do
     doc: "a form field struct retrieved from the form, for example: @form[:email]"
 
   attr :errors, :list, default: []
+  attr :show_error_msg?, :boolean, default: true
   attr :checked, :boolean, doc: "the checked flag for checkbox inputs"
   attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
   attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
@@ -301,7 +303,7 @@ defmodule LiveBrowserWeb.CoreComponents do
 
     ~H"""
     <div phx-feedback-for={@name}>
-      <label class="flex items-center gap-4 text-sm leading-6 text-zinc-600">
+      <label class="flex items-center gap-2 leading-6 cursor-pointer text-gray-900 dark:text-gray-100">
         <input type="hidden" name={@name} value="false" />
         <input
           type="checkbox"
@@ -309,11 +311,39 @@ defmodule LiveBrowserWeb.CoreComponents do
           name={@name}
           value="true"
           checked={@checked}
-          class="rounded border-zinc-300 text-zinc-900 focus:ring-0"
+          class="bg-transparent border-gray-300 focus:ring-0 dark:border-gray-500 checked:bg-transparent dark:checked:border-gray-400"
           {@rest}
         />
         {@label}
       </label>
+      <.error :for={msg <- @errors}>{msg}</.error>
+    </div>
+    """
+  end
+
+  def input(%{type: "checkgroup"} = assigns) do
+    ~H"""
+    <div phx-feedback-for={@name}>
+      <.label for={@id}>{@label}</.label>
+      <div class="w-full focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+        <div>
+          <input type="hidden" name={@name} value="" />
+          <div :for={{label, value} <- @options}>
+            <label for={"#{@name}-#{value}"} class="cursor-pointer">
+              <input
+                type="checkbox"
+                id={"#{@name}-#{value}"}
+                name={@name}
+                value={value}
+                checked={value in @value}
+                class="h-4 w-4 bg-transparent border-gray-300 focus:ring-0 dark:border-gray-500 checked:bg-transparent dark:checked:border-gray-400"
+                {@rest}
+              />
+              {label}
+            </label>
+          </div>
+        </div>
+      </div>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -362,21 +392,22 @@ defmodule LiveBrowserWeb.CoreComponents do
   def input(assigns) do
     ~H"""
     <div phx-feedback-for={@name}>
-      <.label for={@id}>{@label}</.label>
+      <.label :if={@label} for={@id}>{@label}</.label>
       <input
         type={@type}
         name={@name}
         id={@id}
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
-          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
-          "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400",
-          @errors == [] && "border-zinc-300 focus:border-zinc-400",
-          @errors != [] && "border-rose-400 focus:border-rose-400"
+          @class,
+          "block bg-transparent ring-1 ring-inset border-0",
+          if(@label, do: "mt-1"),
+          if(@errors == [], do: "ring-gray-300 dark:ring-gray-700", else: "ring-red-600"),
+          "focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:focus:ring-1 dark:focus:ring-gray-300"
         ]}
         {@rest}
       />
-      <.error :for={msg <- @errors}>{msg}</.error>
+      <.error :for={msg <- @errors} :if={@show_error_msg?}>{msg}</.error>
     </div>
     """
   end
@@ -389,7 +420,7 @@ defmodule LiveBrowserWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
+    <label for={@for} class="block text-sm font-semibold leading-6">
       {render_slot(@inner_block)}
     </label>
     """
@@ -587,6 +618,28 @@ defmodule LiveBrowserWeb.CoreComponents do
     ~H"""
     <span class={[@name, @class]} style="mask-position: center;" {@rest} />
     """
+  end
+
+  @doc """
+  Generate a checkbox group for multi-select.
+  """
+  attr :id, :any
+  attr :name, :any
+  attr :label, :string, default: nil
+  attr :field, Phoenix.HTML.FormField, doc: "..."
+  attr :errors, :list
+  attr :required, :boolean, default: false
+  attr :options, :list, doc: "..."
+  attr :rest, :global, include: ~w(disabled form readonly)
+  attr :class, :string, default: nil
+
+  def checkgroup(assigns) do
+    new_assigns =
+      assigns
+      |> assign(:multiple, true)
+      |> assign(:type, "checkgroup")
+
+    input(new_assigns)
   end
 
   ## JS Commands

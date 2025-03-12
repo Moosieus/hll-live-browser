@@ -4,25 +4,27 @@ defmodule LiveBrowserWeb.Browser do
 
   import LiveBrowserWeb.CoreComponents
 
-  alias LiveBrowser.Browser.Cache
+  alias LiveBrowser.Browser.{FilterSet, Cache}
 
   def mount(_params, _session, socket) do
     if connected?(socket) do
       Phoenix.PubSub.subscribe(LiveBrowser.PubSub, "servers_info")
     end
 
-    filters = [min: &(&1.a2s_players >= 30), max: &(&1.a2s_players <= 90)]
+    filter_set = FilterSet.new()
+    filter_func = FilterSet.to_filter_function(filter_set)
+
     order = [{:players, :desc}]
 
     servers_info =
       Cache.get_servers()
-      |> apply_user_settings(filters, order)
-      |> IO.inspect(label: "servers_info")
+      |> apply_user_settings(filter_func, order)
 
     socket =
       socket
       |> assign(:order, order)
-      |> assign(:filters, filters)
+      |> assign(:filter_set, filter_set)
+      |> assign(:filter_func, filter_func)
       |> assign(:servers_info, servers_info)
 
     {:ok, socket}
@@ -34,11 +36,11 @@ defmodule LiveBrowserWeb.Browser do
       assigns: %{
         servers_info: server_list,
         order: order,
-        filters: filters
+        filter_func: filter_func
       }
     } = socket
 
-    case apply_filters({server.address, server}, filters) do
+    case filter_func.({server.address, server}) do
       true ->
         server_list = insert_server(server_list, server, order)
         socket = assign(socket, :servers_info, server_list)
@@ -49,6 +51,26 @@ defmodule LiveBrowserWeb.Browser do
     end
   end
 
+  def handle_info({:filter_set, filter_set}, socket) do
+    %{
+      assigns: %{order: order}
+    } = socket
+
+    filter_func = FilterSet.to_filter_function(filter_set)
+
+    servers_info =
+      Cache.get_servers()
+      |> apply_user_settings(filter_func, order)
+
+    socket =
+      socket
+      |> assign(:filter_set, filter_set)
+      |> assign(:filter_func, filter_func)
+      |> assign(:servers_info, servers_info)
+
+    {:noreply, socket}
+  end
+
   def handle_info({:info_timeout, address}, socket) do
     %{
       assigns: %{servers_info: server_list}
@@ -57,24 +79,6 @@ defmodule LiveBrowserWeb.Browser do
     server_list = List.keydelete(server_list, address, 0)
 
     socket = assign(socket, :servers_info, server_list)
-    {:noreply, socket}
-  end
-
-  # update filters
-  def handle_info({:update_filters, filters}, socket) do
-    %{
-      assigns: %{order: order}
-    } = socket
-
-    servers_info =
-      Cache.get_servers()
-      |> apply_user_settings(filters, order)
-
-    socket =
-      socket
-      |> assign(:filters, filters)
-      |> assign(:servers_info, servers_info)
-
     {:noreply, socket}
   end
 
@@ -131,25 +135,12 @@ defmodule LiveBrowserWeb.Browser do
     {:noreply, socket}
   end
 
-  def apply_user_settings(servers, filters, order_opts) do
+  def apply_user_settings(servers, filter_func, order_opts) do
+    IO.inspect(filter_func, label: "filter_func")
+
     servers
-    |> Enum.filter(&apply_filters(&1, filters))
+    |> Enum.filter(filter_func)
     |> sort_servers(order_opts)
-  end
-
-  def apply_filters(_server, []), do: true
-
-  def apply_filters({_addr, info}, filters) do
-    do_apply_filters(info, filters)
-  end
-
-  def do_apply_filters(_info, []), do: true
-
-  def do_apply_filters(info, [{_filter, filter_func} | rest]) do
-    case filter_func.(info) do
-      true -> do_apply_filters(info, rest)
-      false -> false
-    end
   end
 
   # ascending -> descending -> no order -> ...

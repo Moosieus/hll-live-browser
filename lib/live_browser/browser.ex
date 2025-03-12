@@ -4,7 +4,7 @@ defmodule LiveBrowser.Browser do
   """
 
   alias Phoenix.PubSub
-  alias LiveBrowser.Browser.{Cache, Server}
+  alias LiveBrowser.Browser.{Cache, Server, FilterSet}
 
   @doc """
   Determines the given server struct is significantly different from what was previously cached.
@@ -38,5 +38,9 @@ defmodule LiveBrowser.Browser do
     if server_changed?(server) do
       :ok = PubSub.broadcast(LiveBrowser.PubSub, "servers_info", {:update_info, server})
     end
+  end
+
+  def change_filter_set(%FilterSet{} = filter_set, attrs \\ %{}) do
+    FilterSet.changeset(filter_set, attrs)
   end
 end

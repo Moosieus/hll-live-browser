@@ -6,15 +6,33 @@ defmodule LiveBrowser.Browser.FilterSet do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias LiveBrowser.Browser.Server
+
+  @region_options [
+    {"Asia", :AS},
+    {"Europe", :EU},
+    {"North America", :NA},
+    {"Oceania", :OC},
+    {"South America", :SA}
+    # {"Africa", :AF} (there are no servers currently in Africa)
+  ]
+  @region_values Enum.map(@region_options, fn {_text, val} -> val end)
+
+  def region_options, do: @region_options
+
   schema "filter_set" do
     field :min_players, :integer, default: 30
     field :max_players, :integer, default: 100
     field :open_slots, :integer, default: 0
     field :with_queue?, :boolean, default: false
-    field :regions, {:array, Ecto.Enum}, values: [:AS, :EU, :NA, :OC, :SA], default: []
-    field :gamemode, {:array, Ecto.Enum}, values: [:warfare, :offensive, :skirmish], default: []
-    field :time_of_day, {:array, Ecto.Enum}, values: [:dawn, :day, :dusk, :night], default: []
-    field :weather, {:array, Ecto.Enum}, values: [:clear, :overcast, :rain, :snow], default: []
+    field :regions, {:array, Ecto.Enum}, values: @region_values, default: []
+    field :gamemode, {:array, Ecto.Enum}, values: Server.gamemode_values(), default: []
+    field :time_of_day, {:array, Ecto.Enum}, values: Server.time_of_day_values(), default: []
+    field :weather, {:array, Ecto.Enum}, values: Server.weather_values(), default: []
+  end
+
+  def new() do
+    %__MODULE__{}
   end
 
   def changeset(filter_set, attrs) do
@@ -23,7 +41,7 @@ defmodule LiveBrowser.Browser.FilterSet do
       :min_players,
       :max_players,
       :open_slots,
-      :with_queue,
+      :with_queue?,
       :regions,
       :gamemode,
       :time_of_day,
@@ -34,8 +52,8 @@ defmodule LiveBrowser.Browser.FilterSet do
   end
 
   defp validate_min_lt_max(changeset) do
-    min = get_field(changeset, :min)
-    max = get_field(changeset, :max)
+    min = get_field(changeset, :min_players)
+    max = get_field(changeset, :max_players)
 
     cond do
       min < max -> changeset
@@ -43,9 +61,18 @@ defmodule LiveBrowser.Browser.FilterSet do
     end
   end
 
-  def to_filter_function(%__MODULE__{}) do
-    fn server ->
-      nil
+  def to_filter_function(%__MODULE__{} = filter_set) do
+    fn {_addr, %Server{} = server} ->
+      [
+        server.a2s_players >= filter_set.min_players,
+        server.a2s_players <= filter_set.max_players,
+        if(filter_set.regions != [], do: server.region in filter_set.regions),
+        if(filter_set.gamemode != [], do: server.gamemode in filter_set.gamemode),
+        if(filter_set.time_of_day != [], do: server.time_of_day in filter_set.time_of_day),
+        if(filter_set.weather != [], do: server.weather in filter_set.weather)
+      ]
+      |> Enum.reject(&is_nil/1)
+      |> Enum.all?()
     end
   end
 end
