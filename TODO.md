@@ -4,3 +4,4 @@
 - [ ] Hide "private" servers
 - [ ] track server stats
 - [ ] Add a stats page for each server
+- [ ] Add an exception for locating HLL Official servers
