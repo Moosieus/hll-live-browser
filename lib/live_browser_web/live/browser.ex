@@ -14,7 +14,7 @@ defmodule LiveBrowserWeb.Browser do
     filter_set = FilterSet.new()
     filter_func = FilterSet.to_filter_function(filter_set)
 
-    order = [{:players, :desc}]
+    order = [{:a2s_players, :desc}]
 
     servers_info =
       Cache.get_servers()
@@ -31,7 +31,7 @@ defmodule LiveBrowserWeb.Browser do
   end
 
   # update from PubSub
-  def handle_info({:update_info, server}, socket) do
+  def handle_info({:server_info, server}, socket) do
     %{
       assigns: %{
         servers_info: server_list,
@@ -82,6 +82,7 @@ defmodule LiveBrowserWeb.Browser do
     {:noreply, socket}
   end
 
+  # no ordering imposed (chaos)
   defp insert_server(server_list, server, []) do
     server_list = List.keydelete(server_list, server.address, 0)
 
@@ -106,11 +107,11 @@ defmodule LiveBrowserWeb.Browser do
   end
 
   # toggle sort
-  def handle_event(
-        "sort",
-        %{"by" => field_str},
-        %{assigns: %{order: order, filters: filters, servers_info: servers_info}} = socket
-      ) do
+  def handle_event("sort", %{"by" => field_str}, socket) do
+    %{
+      assigns: %{order: order, servers_info: servers_info}
+    } = socket
+
     field = String.to_atom(field_str)
 
     direction =
@@ -125,7 +126,7 @@ defmodule LiveBrowserWeb.Browser do
         next -> List.keystore(order, field, 0, {field, next})
       end
 
-    servers_info = apply_user_settings(servers_info, filters, order)
+    servers_info = sort_servers(servers_info, order)
 
     socket =
       socket
@@ -136,8 +137,6 @@ defmodule LiveBrowserWeb.Browser do
   end
 
   def apply_user_settings(servers, filter_func, order_opts) do
-    IO.inspect(filter_func, label: "filter_func")
-
     servers
     |> Enum.filter(filter_func)
     |> sort_servers(order_opts)
@@ -160,16 +159,16 @@ defmodule LiveBrowserWeb.Browser do
 
   defp compare_servers({_, info_i} = i, {_, info_ii} = ii, [{key, :asc} | next]) do
     cond do
-      info_i[key] < info_ii[key] -> true
-      info_i[key] > info_ii[key] -> false
+      get_in(info_i, [Access.key!(key)]) < get_in(info_ii, [Access.key!(key)]) -> true
+      get_in(info_i, [Access.key!(key)]) > get_in(info_ii, [Access.key!(key)]) -> false
       true -> compare_servers(i, ii, next)
     end
   end
 
   defp compare_servers({_, info_i} = i, {_, info_ii} = ii, [{key, :desc} | next]) do
     cond do
-      info_i[key] > info_ii[key] -> true
-      info_i[key] < info_ii[key] -> false
+      get_in(info_i, [Access.key!(key)]) > get_in(info_ii, [Access.key!(key)]) -> true
+      get_in(info_i, [Access.key!(key)]) < get_in(info_ii, [Access.key!(key)]) -> false
       true -> compare_servers(i, ii, next)
     end
   end

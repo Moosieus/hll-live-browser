@@ -42,6 +42,7 @@
       </div>
     </div>
 
+    <!--
     <div>
       <.input
         type="text"
@@ -59,10 +60,19 @@
         <.input type="checkbox" field={@form[:with_queue?]} label="With Queue" />
       </div>
     </div>
+    -->
 
     <.checkgroup field={@form[:regions]} label="Region" options={FilterSet.region_options()} />
     <.checkgroup field={@form[:gamemode]} label="Game Mode" options={Server.gamemode_options()} />
     <.checkgroup field={@form[:time_of_day]} label="Time of day" options={Server.time_of_day_options()} />
     <.checkgroup field={@form[:weather]} label="Weather" options={Server.weather_options()} />
+    
+    <div>
+      <label class="block text-sm font-medium leading-6">
+        Misc.
+      </label>
+      <.input type="checkbox" field={@form[:official?]} label="Official" />
+      <.input type="checkbox" field={@form[:new_match?]} label="New Match" />
+    </div>
   </.form>
 </div>

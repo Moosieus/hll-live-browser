@@ -31,8 +31,6 @@ defmodule LiveBrowserWeb.Browser.Filters do
 
     changeset = Browser.change_filter_set(filter_set, params)
 
-    IO.inspect(changeset, label: "changeset")
-
     if changeset.valid? do
       filter_set = Ecto.Changeset.apply_changes(changeset)
       send(self(), {:filter_set, filter_set})

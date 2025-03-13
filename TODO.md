@@ -1,7 +1,6 @@
-- [ ] Decode the "GS" string
-- [ ] Use new region fields instead of MaxMind
+- [ ] Compare the A2S and GS player counts
+- [ ] Implement the open slots filter
+- [ ] Partition PubSub by Region (AS, EU, NA, OC, SA)
 - [ ] Hide "private" servers
-- [ ] Filter for Offensive and Warfare servers
-- [ ] Filter official servers
 - [ ] track server stats
 - [ ] Add a stats page for each server

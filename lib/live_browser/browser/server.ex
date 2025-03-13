@@ -11,15 +11,17 @@ defmodule LiveBrowser.Browser.Server do
     field :name, :string
     field :address, :string
     field :country, :string
-    field :county_code, :string
-    field :region, :string
+    field :country_code, :string
     field :gamemode, Ecto.Enum, values: [:warfare, :offensive, :skirmish, :unknown]
     field :build_version, :integer
     field :a2s_players, :integer
+    field :gs_players, :integer
     field :max_players, :integer
     field :official?, :boolean
-    field :curr_vip, :integer
+    field :join_queue, :integer
     field :max_queue, :integer
+    field :vip_queue, :integer
+    field :max_vip, :integer
     field :crossplay?, :boolean
     field :offensive_attacker, :string
     field :a2s_map, :string
@@ -29,6 +31,8 @@ defmodule LiveBrowser.Browser.Server do
     field :keywords, {:array, :string}
     field :last_changed, :utc_datetime
     field :gameport, :integer
+    field :map_changed_at, :utc_datetime
+    field :new_match?, :boolean, default: false
   end
 
   def new(%A2S.Info{} = info, address) do
@@ -98,7 +102,7 @@ defmodule LiveBrowser.Browser.Server do
   defp continent_code(location) when is_map(location) do
     case location["continent"]["code"] do
       nil -> :unknown
-      code -> code
+      code -> String.to_atom(code)
     end
   end
 
@@ -118,9 +122,9 @@ defmodule LiveBrowser.Browser.Server do
       players::7,
       official::1,
       _::1,
-      curr_vip::7,
-      _::1,
       max_vip::7,
+      _::1,
+      curr_vip::7,
       _::2,
       cur_queue::3,
       max_queue::3,
@@ -143,10 +147,10 @@ defmodule LiveBrowser.Browser.Server do
       build_version: build_version,
       gs_players: players,
       official?: official == 1,
-      current_vip: curr_vip,
-      max_vip: max_vip,
-      cur_queue: cur_queue,
+      join_queue: cur_queue,
       max_queue: max_queue,
+      vip_queue: curr_vip,
+      max_vip: max_vip,
       crossplay?: crossplay? == 1,
       offensive_attacker: offensive_attacker,
       gs_map: parse_map(map),
@@ -225,18 +229,4 @@ defmodule LiveBrowser.Browser.Server do
 
   def time_of_day_options, do: @time_of_day_options
   def time_of_day_values, do: @time_of_day_values
-
-  # Adding this for backwards compatability, I'll need to change it later.
-
-  def fetch(%__MODULE__{} = term, key) do
-    term |> Map.from_struct() |> Map.fetch(key)
-  end
-
-  def get_and_update(%__MODULE__{} = data, key, function) do
-    data |> Map.from_struct() |> Map.get_and_update(key, function)
-  end
-
-  def pop(data, key) do
-    data |> Map.from_struct() |> Map.pop(key)
-  end
 end
