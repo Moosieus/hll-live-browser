@@ -14,7 +14,7 @@ defmodule LiveBrowserWeb.Browser do
     filter_set = FilterSet.new()
     filter_func = FilterSet.to_filter_function(filter_set)
 
-    order = [{:a2s_players, :desc}]
+    order = [{:gs_players, :desc}]
 
     servers_info =
       Cache.get_servers()

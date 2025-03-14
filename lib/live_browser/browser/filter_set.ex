@@ -68,8 +68,8 @@ defmodule LiveBrowser.Browser.FilterSet do
   def to_filter_function(%__MODULE__{} = filter_set) do
     fn {_addr, %Server{} = server} ->
       [
-        server.a2s_players >= filter_set.min_players,
-        server.a2s_players <= filter_set.max_players,
+        server.gs_players >= filter_set.min_players,
+        server.gs_players <= filter_set.max_players,
         if(filter_set.regions != [], do: server.country_code in filter_set.regions),
         if(filter_set.gamemode != [], do: server.gamemode in filter_set.gamemode),
         if(filter_set.time_of_day != [], do: server.time_of_day in filter_set.time_of_day),
