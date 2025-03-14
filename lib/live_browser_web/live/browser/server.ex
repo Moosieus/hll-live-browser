@@ -22,9 +22,9 @@ defmodule LiveBrowserWeb.Server do
         {@server.country_code}
       </td>
       <td class="py-2 text-right px-2">
-        A2S: {@server.a2s_players} <br /> GS: {@server.gs_players} <br /> Qu:
-        <span class="inline-block">{@server.join_queue}/{@server.max_queue}</span> <br /> VIP:
-        <span class="inline-block">{@server.vip_queue}/{@server.max_vip}</span>
+        <span class="inline-block">
+          {@server.gs_players}/{@server.max_players} ({@server.join_queue}/{@server.max_queue})
+        </span>
       </td>
       <td class="py-2 text-center">
         {if @server.new_match?, do: "Yes", else: "No"}

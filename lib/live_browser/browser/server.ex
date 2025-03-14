@@ -33,6 +33,7 @@ defmodule LiveBrowser.Browser.Server do
     field :gameport, :integer
     field :map_changed_at, :utc_datetime
     field :new_match?, :boolean, default: false
+    field :visibility, Ecto.Enum, values: [:public, :private]
   end
 
   def new(%A2S.Info{} = info, address) do
@@ -122,9 +123,9 @@ defmodule LiveBrowser.Browser.Server do
       players::7,
       official::1,
       _::1,
-      max_vip::7,
-      _::1,
       curr_vip::7,
+      _::1,
+      max_vip::7,
       _::2,
       cur_queue::3,
       max_queue::3,

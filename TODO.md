@@ -1,7 +1,4 @@
-- [ ] Compare the A2S and GS player counts
-- [ ] Implement the open slots filter
 - [ ] Partition PubSub by Region (AS, EU, NA, OC, SA)
-- [ ] Hide "private" servers
 - [ ] track server stats
 - [ ] Add a stats page for each server
 - [ ] Add an exception for locating HLL Official servers

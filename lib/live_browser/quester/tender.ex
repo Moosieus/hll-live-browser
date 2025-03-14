@@ -143,25 +143,31 @@ defmodule LiveBrowser.Quester.Tender do
 
   ## Functions
 
-  defp report_and_next({:info, info}, data) do
+  defp report_and_next({:info, %A2S.Info{} = info}, data) do
     %Data{
       address: address,
       last_sent: last_sent
     } = data
 
-    server = Server.new(info, address)
+    if info.visibility == :public do
+      server = Server.new(info, address)
 
-    Browser.maybe_broadcast_server(server)
+      Browser.maybe_broadcast_server(server)
 
-    sleep(last_sent)
-    :ok = GenServer.call(LiveBrowser.Quester.UDP, {address, A2S.challenge_request(:info)})
+      sleep(last_sent)
+      :ok = GenServer.call(LiveBrowser.Quester.UDP, {address, A2S.challenge_request(:info)})
 
-    data = %Data{
-      address: address,
-      last_sent: Time.utc_now()
-    }
+      data = %Data{
+        address: address,
+        last_sent: Time.utc_now()
+      }
 
-    {:next_state, :await_challenge, data, recv_timeout()}
+      {:next_state, :await_challenge, data, recv_timeout()}
+    else
+      Logger.info(tender_exit: address, msg: "server `#{info.name}` is private.")
+
+      {:stop, :normal}
+    end
   end
 
   defp sleep(last_sent) do
