@@ -22,7 +22,7 @@ defmodule LiveBrowser.Browser.FilterSet do
 
   schema "filter_set" do
     field :min_players, :integer, default: 30
-    field :max_players, :integer, default: 100
+    field :max_players, :integer, default: 90
     field :open_slots, :integer, default: 0
     field :with_queue?, :boolean, default: false
     field :regions, {:array, Ecto.Enum}, values: @region_values, default: []
